@@ -1,1 +1,1 @@
-SE project organization
+Hostel-Management-System
