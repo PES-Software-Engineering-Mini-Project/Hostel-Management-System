@@ -1,0 +1,19 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}HMS{% endblock %}</title>
+  </head>
+  <body>
+    <header>
+      <h1>Hostel Management System</h1>
+    </header>
+    <main>
+      {% block content %}
+        <p>Project foundation is ready. Application features will be added in their own stories.</p>
+      {% endblock %}
+    </main>
+  </body>
+</html>
