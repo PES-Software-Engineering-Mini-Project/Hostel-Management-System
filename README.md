@@ -1,1 +1,60 @@
-Hostel-Management-System
+# Hostel Management System
+
+HMS is a server-rendered Django application for college-hostel operations. Existing
+requirements, proposal, test-plan, and architecture documents in this repository are
+preserved as the project source of truth.
+
+## Technology and current scope
+
+The foundation follows the SRS: Python 3.10+, Django 5.x, Django templates, Django
+ORM, SQLite for local development, and PostgreSQL for deployment. It currently
+contains only the project infrastructure and the custom user-model foundation:
+
+- Django project configuration and a minimal base template/home route.
+- Separate `accounts`, `rooms`, `fees`, `complaints`, and `visitors` apps.
+- An SRN-based user model with unique SRN and email, contact details, optional branch
+  and year of study, and `Student`/`Admin` roles.
+- Django's password hashing; plaintext passwords are never stored.
+
+Login/registration screens, room management/allocation, fees, complaints, visitors,
+dashboards, search, and reports are deliberately deferred to their own stories.
+
+## Local setup
+
+1. Install Python 3.10 or newer.
+2. Create and activate a virtual environment:
+
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # Windows PowerShell: .venv\\Scripts\\Activate.ps1
+   ```
+
+3. Install dependencies and apply migrations:
+
+   ```bash
+   python -m pip install -r requirements.txt
+   python manage.py migrate
+   ```
+
+4. Run checks, tests, and the development server:
+
+   ```bash
+   python manage.py check
+   python manage.py test
+   python manage.py runserver
+   ```
+
+   Visit `http://127.0.0.1:8000/`. The Django admin is at `/admin/`; create a
+   superuser with `python manage.py createsuperuser` when needed.
+
+## Configuration
+
+SQLite (`db.sqlite3`) is the default and needs no credentials. Copy `.env.example`
+to `.env` as a safe local reference; settings are read from environment variables, so
+load that file with your preferred environment tool or export the values in your shell.
+
+To use PostgreSQL, set `DATABASE_ENGINE=django.db.backends.postgresql` together with
+`POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, and
+`POSTGRES_PORT`. No passwords or other secrets are committed. Set
+`DJANGO_SECRET_KEY` before any non-development deployment; production also requires
+`DJANGO_DEBUG=False` and an explicit `DJANGO_ALLOWED_HOSTS` list.
