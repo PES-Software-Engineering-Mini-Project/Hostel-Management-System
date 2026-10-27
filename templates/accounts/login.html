@@ -24,6 +24,14 @@
       <h2>Welcome back</h2>
       <p class="supporting-text">Sign in with your college SRN to continue.</p>
 
+      {% if messages %}
+        <ul class="auth-messages" aria-label="Status messages">
+          {% for message in messages %}
+            <li class="auth-message" role="status">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
       <form method="post" data-login-form novalidate>
         {% csrf_token %}
         {% if form.non_field_errors %}
@@ -44,7 +52,7 @@
         </div>
         <button class="login-button" type="submit">Sign in</button>
       </form>
-      <p class="registration-note">New to the hostel? Student registration will be available soon.</p>
+      <p class="registration-note">New to the hostel? <a href="{% url 'register' %}">Create your Student account.</a></p>
     </div>
   </main>
 </div>

@@ -1,11 +1,12 @@
 from django.contrib.auth import logout
 from django.contrib.auth.views import LoginView
+from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from .decorators import admin_required, student_required
-from .forms import SRNAuthenticationForm
+from .forms import SRNAuthenticationForm, StudentRegistrationForm
 from .models import User
 
 
@@ -20,6 +21,21 @@ class RoleBasedLoginView(LoginView):
         if self.request.user.role == User.Role.ADMIN:
             return reverse("admin-dashboard")
         return reverse("student-dashboard")
+
+
+def register(request):
+    """Register a new Student account; roles are never supplied by the browser."""
+    if request.user.is_authenticated:
+        if request.user.role == User.Role.ADMIN:
+            return redirect("admin-dashboard")
+        return redirect("student-dashboard")
+
+    form = StudentRegistrationForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Registration successful. Please sign in with your SRN.")
+        return redirect("login")
+    return render(request, "accounts/register.html", {"form": form})
 
 
 @student_required
