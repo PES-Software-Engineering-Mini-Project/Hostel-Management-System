@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Fee management | HMS{% endblock %}
+
+{% block page_content %}
+<link rel="stylesheet" href="{% static 'fees/css/fees.css' %}">
+<main class="fee-page">
+  <div class="fee-heading">
+    <h1>Fee management</h1>
+    <a class="fee-button" href="{% url 'fees:fee-create' %}">Add fee record</a>
+  </div>
+  {% include "fees/_messages.html" %}
+
+  {% if records %}
+    <div class="fee-table-wrap">
+      <table class="fee-table">
+        <thead>
+          <tr>
+            <th scope="col">SRN</th>
+            <th scope="col">Student</th>
+            <th scope="col">Term</th>
+            <th scope="col" class="num">Due (&#8377;)</th>
+            <th scope="col" class="num">Paid (&#8377;)</th>
+            <th scope="col" class="num">Balance (&#8377;)</th>
+            <th scope="col"><span class="visually-hidden">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for record in records %}
+            <tr>
+              <td>{{ record.student.srn }}</td>
+              <td>{{ record.student.get_full_name }}</td>
+              <td>{{ record.term }}</td>
+              <td class="num">{{ record.amount_due }}</td>
+              <td class="num">{{ record.amount_paid }}</td>
+              <td class="num">{{ record.balance }}</td>
+              <td>
+                {% if record.is_fully_paid %}
+                  <span class="fee-badge fee-badge-paid">Paid</span>
+                {% else %}
+                  <a href="{% url 'fees:record-payment' record.pk %}">Record payment</a>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="fee-empty">No fee records yet.</p>
+  {% endif %}
+</main>
+{% endblock %}

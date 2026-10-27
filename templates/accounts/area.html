@@ -8,6 +8,11 @@
     <h1 id="area-title">{{ area_name }}</h1>
     <p>You are signed in as {{ request.user.get_full_name|default:request.user.srn }}.</p>
     <p>Feature-specific dashboard content will be delivered in its own story.</p>
+    {% if request.user.role == "admin" %}
+      <p><a href="{% url 'fees:fee-list' %}">Manage fees</a></p>
+    {% else %}
+      <p><a href="{% url 'fees:my-fees' %}">View my fees</a></p>
+    {% endif %}
   </section>
 </main>
 {% endblock %}
