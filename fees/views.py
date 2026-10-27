@@ -1,34 +1,11 @@
-from functools import wraps
-
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect, render
 
-from accounts.models import User
+from accounts.decorators import admin_required, student_required
 
 from .forms import FeeRecordForm, PaymentForm
 from .models import FeeRecord
-
-
-def role_required(role):
-    """Reject users whose stored role does not match, checked on the server (NFR-3)."""
-
-    def decorator(view):
-        @login_required
-        @wraps(view)
-        def wrapper(request, *args, **kwargs):
-            if request.user.role != role:
-                raise PermissionDenied
-            return view(request, *args, **kwargs)
-
-        return wrapper
-
-    return decorator
-
-
-admin_required = role_required(User.Role.ADMIN)
-student_required = role_required(User.Role.STUDENT)
 
 
 @admin_required

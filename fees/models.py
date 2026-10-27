@@ -1,11 +1,11 @@
 from decimal import Decimal
 
 from django.conf import settings
-from django.core.exceptions import ValidationError
+from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models, transaction
 from django.db.models import DecimalField, Sum, Value
-from django.db.models.functions import Coalesce
+from django.db.models.functions import Coalesce, Lower
 from django.utils import timezone
 
 MIN_AMOUNT = Decimal("0.01")
@@ -25,7 +25,11 @@ class FeeRecordQuerySet(models.QuerySet):
 
 
 class FeeRecord(models.Model):
-    """The hostel fee one student owes for one term (FR-5.1)."""
+    """The hostel fee one student owes for one term (FR-5.1).
+
+    The amount due is entered by an Admin for now. Deriving it from the student's allotted
+    room fee (SRS FR-5.1) needs room allocation, which arrives with SCRUM-9 in Sprint 2.
+    """
 
     student = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -45,7 +49,10 @@ class FeeRecord(models.Model):
         ordering = ["-created_at"]
         constraints = [
             models.UniqueConstraint(
-                fields=["student", "term"], name="unique_fee_record_per_student_term"
+                "student",
+                Lower("term"),
+                name="unique_fee_record_per_student_term",
+                violation_error_message="This student already has a fee record for this term.",
             ),
         ]
 
@@ -104,13 +111,24 @@ class Payment(models.Model):
         return f"{self.fee_record} - {self.amount}"
 
     def clean(self):
+        # fee_record and recorded_by are set by the view, not typed into the payment form, so
+        # their errors are non-field errors; a field key would crash a form that omits them.
         errors = {}
+        integrity_errors = []
+        previous = Payment.objects.filter(pk=self.pk).first() if self.pk else None
+        moved = previous is not None and previous.fee_record_id != self.fee_record_id
+        if moved:
+            integrity_errors.append("A recorded payment cannot be moved to another fee record.")
+        if self.recorded_by_id and self.recorded_by.role != self.recorded_by.Role.ADMIN:
+            integrity_errors.append("Only an Admin can record a payment.")
+        if integrity_errors:
+            errors[NON_FIELD_ERRORS] = integrity_errors
         if self.paid_on and self.paid_on > timezone.localdate():
             errors["paid_on"] = "Payment date cannot be in the future."
-        if self.amount is not None and self.fee_record_id:
+        if self.amount is not None and self.fee_record_id and not moved:
             outstanding = self.fee_record.balance
-            if self.pk:
-                outstanding += Payment.objects.get(pk=self.pk).amount
+            if previous:
+                outstanding += previous.amount
             if self.amount > outstanding:
                 errors["amount"] = (
                     f"Payment cannot exceed the outstanding balance of ₹{outstanding}."

@@ -52,6 +52,23 @@ class FeeRecordModelTests(TestCase):
         with transaction.atomic(), self.assertRaises(IntegrityError):
             make_fee_record(self.student, term="2026-27 Odd")
 
+    def test_case_variant_term_is_a_duplicate_in_the_database(self):
+        make_fee_record(self.student, term="2026-27 Odd")
+
+        with transaction.atomic(), self.assertRaises(IntegrityError):
+            make_fee_record(self.student, term="2026-27 ODD")
+
+    def test_case_variant_term_fails_model_validation(self):
+        make_fee_record(self.student, term="2026-27 Odd")
+        record = FeeRecord(student=self.student, term="2026-27 odd", amount_due=Decimal("100.00"))
+
+        with self.assertRaises(ValidationError) as caught:
+            record.full_clean()
+        self.assertIn(
+            "This student already has a fee record for this term.",
+            caught.exception.messages,
+        )
+
     def test_same_term_allowed_for_different_students(self):
         other = make_user("PES1UG23CS102")
         make_fee_record(self.student, term="2026-27 Odd")
@@ -146,6 +163,36 @@ class RecordPaymentTests(TestCase):
         payment.amount = Decimal("9000.00")
         payment.full_clean()
 
+    def test_payment_cannot_be_moved_to_another_fee_record(self):
+        # Moving a fully used 10000 payment onto a fully paid 5000 record must not be allowed;
+        # counting the old amount against the new record would hide a 10000 overpayment.
+        payment = self.pay("10000.00")
+        other = make_fee_record(make_user("PES1UG23CS202"), amount_due="5000.00")
+        other.record_payment(
+            amount=Decimal("5000.00"), paid_on=self.today, recorded_by=self.admin_user
+        )
+
+        payment.fee_record = other
+
+        with self.assertRaises(ValidationError) as caught:
+            payment.full_clean()
+        self.assertIn(
+            "A recorded payment cannot be moved to another fee record.",
+            caught.exception.message_dict["__all__"],
+        )
+        self.assertNotIn("amount", caught.exception.message_dict)
+
+    def test_only_an_admin_can_record_a_payment(self):
+        with self.assertRaises(ValidationError) as caught:
+            self.record.record_payment(
+                amount=Decimal("100.00"), paid_on=self.today, recorded_by=self.student
+            )
+
+        self.assertIn(
+            "Only an Admin can record a payment.", caught.exception.message_dict["__all__"]
+        )
+        self.assertFalse(Payment.objects.exists())
+
 
 class FeeRecordFormTests(TestCase):
     def setUp(self):
@@ -207,3 +254,13 @@ class PaymentFormTests(TestCase):
 
         self.assertFalse(form.is_valid())
         self.assertIn("amount", form.errors)
+
+    def test_non_admin_recorder_is_a_form_error_not_a_crash(self):
+        form = PaymentForm(
+            data={"amount": "100.00", "paid_on": timezone.localdate().isoformat()},
+            fee_record=self.record,
+            recorded_by=self.record.student,
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("Only an Admin can record a payment.", form.non_field_errors())
