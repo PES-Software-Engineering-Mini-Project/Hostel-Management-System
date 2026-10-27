@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Manage complaints | HMS{% endblock %}
+
+{% block page_content %}
+<link rel="stylesheet" href="{% static 'complaints/css/complaints.css' %}">
+<main class="complaint-page">
+  <div class="complaint-heading">
+    <h1>Manage complaints</h1>
+  </div>
+  {% include "complaints/_messages.html" %}
+
+  {% if complaints %}
+    <div class="complaint-table-wrap">
+      <table class="complaint-table">
+        <thead>
+          <tr>
+            <th scope="col">SRN</th>
+            <th scope="col">Student</th>
+            <th scope="col">Category</th>
+            <th scope="col">Description</th>
+            <th scope="col">Raised</th>
+            <th scope="col">Status</th>
+            <th scope="col"><span class="visually-hidden">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for complaint in complaints %}
+            <tr>
+              <td>{{ complaint.student.srn }}</td>
+              <td>{{ complaint.student.get_full_name }}</td>
+              <td>{{ complaint.get_category_display }}</td>
+              <td>{{ complaint.description|linebreaksbr }}</td>
+              <td class="when">{{ complaint.raised_at|date:"d M Y, H:i" }}</td>
+              <td><span class="complaint-badge complaint-badge-{{ complaint.status }}">{{ complaint.get_status_display }}</span></td>
+              <td>
+                {% if complaint.status == "open" %}
+                  <form class="complaint-inline-form" method="post" action="{% url 'complaints:update-status' complaint.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="in_progress">
+                    <button class="complaint-button" type="submit">Start work</button>
+                  </form>
+                {% elif complaint.status == "in_progress" %}
+                  <form class="complaint-inline-form" method="post" action="{% url 'complaints:update-status' complaint.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="resolved">
+                    <button class="complaint-button" type="submit">Mark resolved</button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="complaint-empty">No complaints yet.</p>
+  {% endif %}
+</main>
+{% endblock %}

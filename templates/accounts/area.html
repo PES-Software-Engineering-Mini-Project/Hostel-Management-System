@@ -10,8 +10,11 @@
     <p>Feature-specific dashboard content will be delivered in its own story.</p>
     {% if request.user.role == "admin" %}
       <p><a href="{% url 'fees:fee-list' %}">Manage fees</a></p>
+      <p><a href="{% url 'complaints:complaint-list' %}">Manage complaints</a></p>
     {% else %}
       <p><a href="{% url 'fees:my-fees' %}">View my fees</a></p>
+      <p><a href="{% url 'complaints:raise' %}">Raise a complaint</a></p>
+      <p><a href="{% url 'complaints:my-complaints' %}">My complaints</a></p>
     {% endif %}
   </section>
 </main>

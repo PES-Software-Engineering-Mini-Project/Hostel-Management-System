@@ -1,0 +1,7 @@
+{% if messages %}
+  <ul class="complaint-messages">
+    {% for message in messages %}
+      <li class="complaint-message complaint-message-{{ message.tags }}" role="status">{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}

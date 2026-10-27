@@ -83,6 +83,9 @@ input:focus { border-color: var(--teal-500); }
 .login-button[disabled] { cursor: wait; opacity: .75; }
 .registration-note { color: var(--neutral-500); font-size: .9rem; line-height: 1.5; margin: 1.35rem 0 0; }
 .registration-note a { color: var(--blue-600); font-weight: 750; }
+.registration-card { max-width: 30rem; }
+.auth-messages { list-style: none; margin: 0 0 1.1rem; padding: 0; }
+.auth-message { background: #e3f6ec; border: 1px solid #a6dfc0; border-radius: .65rem; color: #11643a; padding: .8rem .9rem; }
 .area-page { margin: 3rem auto; max-width: 45rem; padding: 0 1.25rem; }
 .area-card { background: var(--surface); border: 1px solid var(--neutral-200); border-radius: 1rem; box-shadow: 0 1rem 2.5rem rgb(22 47 83 / .08); padding: 2rem; }
 
