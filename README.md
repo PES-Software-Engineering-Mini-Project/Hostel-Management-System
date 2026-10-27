@@ -1,5 +1,7 @@
 # Hostel Management System
 
+[![CI](https://github.com/PES-Software-Engineering-Mini-Project/Hostel-Management-System/actions/workflows/ci.yml/badge.svg)](https://github.com/PES-Software-Engineering-Mini-Project/Hostel-Management-System/actions/workflows/ci.yml)
+
 HMS is a server-rendered Django application for college-hostel operations. Existing
 requirements, proposal, test-plan, and architecture documents in this repository are
 preserved as the project source of truth.
@@ -46,6 +48,22 @@ dashboards, search, and reports are deliberately deferred to their own stories.
 
    Visit `http://127.0.0.1:8000/`. The Django admin is at `/admin/`; create a
    superuser with `python manage.py createsuperuser` when needed.
+
+## Continuous integration
+
+GitHub Actions (`.github/workflows/ci.yml`) runs on every push and on every pull
+request to `main`, using Python 3.10 and 3.12. Each run installs the requirements and
+executes the same checks you should run locally before pushing:
+
+```bash
+python manage.py check
+python manage.py makemigrations --check --dry-run
+python manage.py test
+```
+
+A pull request can be merged into `main` only when CI passes and a teammate has
+approved it. If a run fails, open it from the Actions tab, reproduce the failing step
+locally, and push a fix before continuing other work.
 
 ## Configuration
 
