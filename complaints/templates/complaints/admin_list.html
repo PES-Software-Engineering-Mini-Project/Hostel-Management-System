@@ -1,0 +1,58 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Complaints</title>
+</head>
+<body>
+    <h1>All Complaints</h1>
+
+    {% for message in messages %}
+        <p>{{ message }}</p>
+    {% endfor %}
+
+    <table border="1" cellpadding="8">
+        <tr>
+            <th>Student</th>
+            <th>Room</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+        {% for complaint in complaints %}
+            <tr>
+                <td>{{ complaint.student.username }}</td>
+                <td>{{ complaint.room }}</td>
+                <td>{{ complaint.category }}</td>
+                <td>{{ complaint.description }}</td>
+                <td>{{ complaint.status }}</td>
+                <td>
+                    {% if complaint.status == "Open" %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="complaint_id"
+                                   value="{{ complaint.id }}">
+                            <input type="hidden" name="status"
+                                   value="In Progress">
+                            <button type="submit">Start Work</button>
+                        </form>
+                    {% elif complaint.status == "In Progress" %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="complaint_id"
+                                   value="{{ complaint.id }}">
+                            <input type="hidden" name="status"
+                                   value="Resolved">
+                            <button type="submit">Resolve</button>
+                        </form>
+                    {% endif %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="6">No complaints found.</td></tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

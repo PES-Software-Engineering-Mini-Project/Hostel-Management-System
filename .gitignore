@@ -1,20 +1,5 @@
-# Python
+.venv/
 __pycache__/
 *.py[cod]
-*.sqlite3
-.venv/
-venv/
-
-# Django
-staticfiles/
-media/
-
-# Environment and local tooling
+db.sqlite3
 .env
-.env.*
-!.env.example
-.pytest_cache/
-.coverage
-htmlcov/
-.idea/
-.vscode/

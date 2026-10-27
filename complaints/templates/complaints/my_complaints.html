@@ -1,0 +1,38 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Complaints</title>
+</head>
+<body>
+    <h1>My Complaints</h1>
+
+    {% for message in messages %}
+        <p>{{ message }}</p>
+    {% endfor %}
+
+    <p><a href="{% url 'create_complaint' %}">Raise a Complaint</a></p>
+
+    <table border="1" cellpadding="8">
+        <tr>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Room</th>
+            <th>Status</th>
+            <th>Submitted</th>
+        </tr>
+        {% for complaint in complaints %}
+            <tr>
+                <td>{{ complaint.category }}</td>
+                <td>{{ complaint.description }}</td>
+                <td>{{ complaint.room }}</td>
+                <td>{{ complaint.status }}</td>
+                <td>{{ complaint.created_at }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5">No complaints yet.</td></tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

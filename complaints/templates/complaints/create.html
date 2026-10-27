@@ -1,0 +1,37 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Raise a Complaint</title>
+</head>
+<body>
+    <h1>Raise a Complaint</h1>
+
+    {% for message in messages %}
+        <p>{{ message }}</p>
+    {% endfor %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <label>Room number</label>
+        <input name="room" required maxlength="30">
+
+        <label>Category</label>
+        <select name="category" required>
+            <option value="">Select category</option>
+            {% for value, label in categories %}
+                <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Description</label>
+        <textarea name="description" required></textarea>
+
+        <button type="submit">Submit Complaint</button>
+    </form>
+
+    <a href="{% url 'my_complaints' %}">My Complaints</a>
+</body>
+</html>

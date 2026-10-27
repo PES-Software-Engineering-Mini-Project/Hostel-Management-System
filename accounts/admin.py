@@ -1,17 +1,17 @@
+
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-
-from .models import User
+from .models import StudentProfile
 
 
-@admin.register(User)
-class HMSUserAdmin(UserAdmin):
-    model = User
-    ordering = ("srn",)
-    list_display = ("srn", "email", "first_name", "last_name", "role", "is_staff")
-    fieldsets = UserAdmin.fieldsets + (
-        ("HMS identity", {"fields": ("srn", "contact_number", "branch", "year_of_study", "role")} ),
-    )
-    add_fieldsets = UserAdmin.add_fieldsets + (
-        ("HMS identity", {"fields": ("srn", "email", "contact_number", "branch", "year_of_study", "role")} ),
-    )
+@admin.register(StudentProfile)
+class StudentProfileAdmin(admin.ModelAdmin):
+    list_display = ("srn", "get_name", "get_email", "phone")
+    search_fields = ("srn", "user__first_name", "user__email")
+
+    @admin.display(description="Name")
+    def get_name(self, obj):
+        return obj.user.get_full_name() or obj.user.username
+
+    @admin.display(description="Email")
+    def get_email(self, obj):
+        return obj.user.email

@@ -1,0 +1,35 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Student</title>
+</head>
+<body>
+    <h1>Edit Student Record</h1>
+
+    {% for message in messages %}
+        <p>{{ message }}</p>
+    {% endfor %}
+
+    <p>SRN: {{ student.srn }}</p>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <label>Name</label>
+        <input name="name" value="{{ student.user.first_name }}" required>
+
+        <label>Email</label>
+        <input type="email" name="email"
+               value="{{ student.user.email }}" required>
+
+        <label>Phone</label>
+        <input name="phone" value="{{ student.phone }}" required>
+
+        <button type="submit">Save changes</button>
+    </form>
+
+    <p><a href="{% url 'student_list' %}">Back to students</a></p>
+</body>
+</html>

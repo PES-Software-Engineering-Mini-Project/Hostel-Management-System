@@ -1,0 +1,107 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hostel Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background: #f4f6f9;
+            color: #222;
+        }
+        h1 { color: #243b55; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+        }
+        .card {
+            background: white;
+            padding: 22px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #00000012;
+        }
+        .number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #176b87;
+        }
+        .note { color: #666; font-size: 13px; }
+        a { color: #176b87; }
+    </style>
+</head>
+<body>
+    <h1>Hostel Management System</h1>
+    <h2>Administrator Dashboard</h2>
+
+    <div class="grid">
+        <div class="card">
+            <h3>Total Rooms</h3>
+            <p class="number">
+                {% if total_rooms != None %}
+                    {{ total_rooms }}
+                {% else %}
+                    Not configured
+                {% endif %}
+            </p>
+            <p>Occupied:
+                {% if occupied_rooms != None %}
+                    {{ occupied_rooms }}
+                {% else %}
+                    Not configured
+                {% endif %}
+            </p>
+            <p>Occupancy:
+                {% if occupancy_percentage != None %}
+                    {{ occupancy_percentage }}%
+                {% else %}
+                    Not configured
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Outstanding Fees</h3>
+            <p>Students owing:
+                {% if students_owing_fees != None %}
+                    {{ students_owing_fees }}
+                {% else %}
+                    Not configured
+                {% endif %}
+            </p>
+            <p>Total amount owed:
+                {% if total_amount_owed != None %}
+                    ₹{{ total_amount_owed }}
+                {% else %}
+                    Not configured
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Complaints</h3>
+            <p>Open complaints</p>
+            <p class="number">{{ open_complaints }}</p>
+            <p>In Progress complaints</p>
+            <p class="number">{{ in_progress_complaints }}</p>
+            <a href="/complaints/admin/">Manage Complaints</a>
+        </div>
+
+        <div class="card">
+            <h3>Room Applications</h3>
+            <p class="number">
+                {% if pending_applications != None %}
+                    {{ pending_applications }}
+                {% else %}
+                    Not configured
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <p><a href="/admin/">Open Django Administration</a></p>
+</body>
+</html>

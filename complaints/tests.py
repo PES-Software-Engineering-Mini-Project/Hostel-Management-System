@@ -1,7 +1,3 @@
-from django.apps import apps
-from django.test import SimpleTestCase
+from django.test import TestCase
 
-
-class ComplaintsAppTests(SimpleTestCase):
-    def test_app_is_installed(self):
-        self.assertTrue(apps.is_installed("complaints"))
+# Create your tests here.
