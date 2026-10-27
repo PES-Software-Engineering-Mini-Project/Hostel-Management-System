@@ -44,8 +44,8 @@ class UserModelTests(TestCase):
             with self.assertRaises(IntegrityError):
                 user_model.objects.create_user(
                     srn="PES1UG23CS003", email="unique@example.com", password="password-123",
-                first_name="Third", last_name="User", contact_number="9876543212",
-            )
+                    first_name="Third", last_name="User", contact_number="9876543212",
+                )
 
 
 class AuthenticationFlowTests(TestCase):
@@ -102,8 +102,10 @@ class AuthenticationFlowTests(TestCase):
     def test_anonymous_user_is_sent_to_login_for_admin_area(self):
         response = self.client.get(reverse("admin-dashboard"))
 
-        self.assertEqual(response.status_code, 302)
-        self.assertIn(reverse("login"), response.url)
+        self.assertRedirects(
+            response,
+            f"{reverse('login')}?next={reverse('admin-dashboard')}",
+        )
 
     def test_logout_ends_the_session_and_protected_area_requires_login(self):
         self.client.force_login(self.student)
@@ -112,5 +114,7 @@ class AuthenticationFlowTests(TestCase):
 
         self.assertRedirects(response, reverse("login"))
         protected_response = self.client.get(reverse("student-dashboard"))
-        self.assertEqual(protected_response.status_code, 302)
-        self.assertIn(reverse("login"), protected_response.url)
+        self.assertRedirects(
+            protected_response,
+            f"{reverse('login')}?next={reverse('student-dashboard')}",
+        )

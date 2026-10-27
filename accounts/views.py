@@ -1,12 +1,10 @@
 from django.contrib.auth import logout
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
-from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
 
+from .decorators import admin_required, student_required
 from .forms import SRNAuthenticationForm
 from .models import User
 
@@ -24,17 +22,13 @@ class RoleBasedLoginView(LoginView):
         return reverse("student-dashboard")
 
 
-@login_required
+@student_required
 def student_dashboard(request):
-    if request.user.role != User.Role.STUDENT:
-        raise PermissionDenied("Admin users cannot access the student area.")
     return render(request, "accounts/area.html", {"area_name": "Student area"})
 
 
-@login_required
+@admin_required
 def admin_dashboard(request):
-    if request.user.role != User.Role.ADMIN:
-        raise PermissionDenied("You do not have permission to access this area.")
     return render(request, "accounts/area.html", {"area_name": "Admin area"})
 
 

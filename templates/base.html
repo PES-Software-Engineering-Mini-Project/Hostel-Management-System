@@ -18,6 +18,6 @@
       </header>
     {% endif %}
     {% block page_content %}{% endblock %}
-    <script src="{% static 'accounts/js/login.js' %}"></script>
+    {% block scripts %}{% endblock %}
   </body>
 </html>
