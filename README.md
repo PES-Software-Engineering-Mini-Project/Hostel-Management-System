@@ -18,8 +18,10 @@ contains only the project infrastructure and the custom user-model foundation:
   and year of study, and `Student`/`Admin` roles.
 - Django's password hashing; plaintext passwords are never stored.
 
-Login/registration screens, room management/allocation, fees, complaints, visitors,
-dashboards, search, and reports are deliberately deferred to their own stories.
+The SCRUM-6 login page authenticates with SRN and password, redirects users according
+to their stored Student/Admin role, protects the two post-login landing routes, and
+supports POST logout. Registration, room management/allocation, feature dashboards,
+fees, complaints, visitors, search, and reports remain separate stories.
 
 ## Local setup
 

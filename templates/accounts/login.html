@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Sign in | HMS{% endblock %}
+
+{% block page_content %}
+<div class="login-page">
+  <section class="welcome-panel" aria-labelledby="welcome-title">
+    <div>
+      <p class="eyebrow">Hostel Management System</p>
+      <h1 id="welcome-title">A simpler way to manage hostel life.</h1>
+      <p>Access your accommodation information and hostel services through one secure, student-first portal.</p>
+    </div>
+    <div class="hostel-illustration" aria-hidden="true">
+      <div class="building building-small"></div>
+      <div class="building building-side"></div>
+      <div class="building building-main"></div>
+    </div>
+  </section>
+
+  <main class="login-panel">
+    <div class="login-card">
+      <div class="product-name">HMS Portal</div>
+      <h2>Welcome back</h2>
+      <p class="supporting-text">Sign in with your college SRN to continue.</p>
+
+      <form method="post" data-login-form novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="form-alert" role="alert">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <div class="field">
+          <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+          {{ form.username }}
+          {% for error in form.username.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="field">
+          <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+          <div class="password-wrap">
+            {{ form.password }}
+            <button class="password-toggle" type="button" data-password-toggle aria-label="Show password">Show</button>
+          </div>
+          {% for error in form.password.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        <button class="login-button" type="submit">Sign in</button>
+      </form>
+      <p class="registration-note">New to the hostel? Student registration will be available soon.</p>
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'accounts/js/login.js' %}"></script>
+{% endblock %}

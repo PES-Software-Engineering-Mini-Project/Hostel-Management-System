@@ -1,0 +1,38 @@
+from django.contrib.auth import logout
+from django.contrib.auth.views import LoginView
+from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.views.decorators.http import require_POST
+
+from .decorators import admin_required, student_required
+from .forms import SRNAuthenticationForm
+from .models import User
+
+
+class RoleBasedLoginView(LoginView):
+    """Authenticate with Django auth and route users by their stored HMS role."""
+
+    authentication_form = SRNAuthenticationForm
+    template_name = "accounts/login.html"
+    redirect_authenticated_user = True
+
+    def get_success_url(self):
+        if self.request.user.role == User.Role.ADMIN:
+            return reverse("admin-dashboard")
+        return reverse("student-dashboard")
+
+
+@student_required
+def student_dashboard(request):
+    return render(request, "accounts/area.html", {"area_name": "Student area"})
+
+
+@admin_required
+def admin_dashboard(request):
+    return render(request, "accounts/area.html", {"area_name": "Admin area"})
+
+
+@require_POST
+def logout_view(request):
+    logout(request)
+    return redirect("login")
