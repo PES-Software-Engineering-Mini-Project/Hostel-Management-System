@@ -1,0 +1,58 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Room Management</title>
+</head>
+<body>
+    <h1>Hostel Room Management</h1>
+
+    <p>
+        <a href="{% url 'rooms:block-create' %}">Add Block</a>
+        |
+        <a href="{% url 'rooms:room-create' %}">Add Room</a>
+    </p>
+
+    <h2>Blocks</h2>
+    <ul>
+        {% for block in blocks %}
+            <li>
+                {{ block.name }} -
+                {{ block.number_of_floors }} floors
+            </li>
+        {% empty %}
+            <li>No blocks available.</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Rooms</h2>
+    <table border="1" cellpadding="8">
+        <tr>
+            <th>Block</th>
+            <th>Room Number</th>
+            <th>Floor</th>
+            <th>Type</th>
+            <th>Capacity</th>
+            <th>Occupied</th>
+            <th>Monthly Fee</th>
+        </tr>
+
+        {% for room in rooms %}
+        <tr>
+            <td>{{ room.block.name }}</td>
+            <td>{{ room.room_number }}</td>
+            <td>{{ room.floor }}</td>
+            <td>{{ room.room_type }}</td>
+            <td>{{ room.capacity }}</td>
+            <td>{{ room.occupied_count }}</td>
+            <td>{{ room.monthly_fee }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7">No rooms available.</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

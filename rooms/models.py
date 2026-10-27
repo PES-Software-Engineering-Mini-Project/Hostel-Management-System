@@ -18,10 +18,31 @@ class Block(models.Model):
 
     def clean(self):
         super().clean()
-        if self.number_of_floors < 1:
-            raise ValidationError({
-                "number_of_floors": "A block must have at least one floor."
-            })
+
+        if self.number_of_floors is not None:
+            highest_room_floor = self.rooms.aggregate(
+                highest=models.Max("floor")
+            )["highest"]
+
+            if (
+                highest_room_floor is not None
+                and self.number_of_floors < highest_room_floor
+            ):
+                raise ValidationError({
+                    "number_of_floors": (
+                        "Cannot reduce the number of floors below "
+                        "the floor of an existing room."
+                    )
+                })
+
+
+class RoomQuerySet(models.QuerySet):
+    def delete(self):
+        if self.filter(occupied_count__gt=0).exists():
+            raise ValidationError(
+                "Rooms with current occupants cannot be deleted."
+            )
+        return super().delete()
 
 
 class Room(models.Model):
@@ -29,7 +50,6 @@ class Room(models.Model):
         SINGLE = "Single", "Single"
         DOUBLE = "Double", "Double"
         TRIPLE = "Triple", "Triple"
-        DORMITORY = "Dormitory", "Dormitory"
 
     block = models.ForeignKey(
         Block,
@@ -54,6 +74,8 @@ class Room(models.Model):
     )
     occupied_count = models.PositiveIntegerField(default=0)
 
+    objects = RoomQuerySet.as_manager()
+
     class Meta:
         ordering = ["block__name", "floor", "room_number"]
         constraints = [
@@ -70,7 +92,12 @@ class Room(models.Model):
         super().clean()
         errors = {}
 
-        if self.block_id and self.floor > self.block.number_of_floors:
+        if (
+            self.block_id
+            and self.floor is not None
+            and self.block.number_of_floors is not None
+            and self.floor > self.block.number_of_floors
+        ):
             errors["floor"] = (
                 "Floor cannot exceed the block's number of floors."
             )
@@ -81,17 +108,28 @@ class Room(models.Model):
             self.RoomType.TRIPLE: 3,
         }
 
-        if self.room_type in expected_capacity:
+        if self.room_type in expected_capacity and self.capacity is not None:
             expected = expected_capacity[self.room_type]
             if self.capacity != expected:
                 errors["capacity"] = (
                     f"{self.room_type} rooms must have capacity {expected}."
                 )
 
-        if self.occupied_count > self.capacity:
+        if (
+            self.occupied_count is not None
+            and self.capacity is not None
+            and self.occupied_count > self.capacity
+        ):
             errors["occupied_count"] = (
                 "Occupied count cannot exceed room capacity."
             )
 
         if errors:
             raise ValidationError(errors)
+
+    def delete(self, *args, **kwargs):
+        if self.occupied_count > 0:
+            raise ValidationError(
+                "A room with current occupants cannot be deleted."
+            )
+        return super().delete(*args, **kwargs)
