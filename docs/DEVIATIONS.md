@@ -28,8 +28,9 @@ _Last updated: 27 Oct 2026, end of Sprint 1._
 | D-09 | Rooms | Room fee stored as `monthly_fee`; fees are tracked per term | Open | #29, #14 |
 | D-10 | Testing | Automated tests are not labelled with Test Plan case IDs (TC-xx) | Planned | — |
 | D-11 | Testing | CI runs on SQLite only, not also on PostgreSQL | Planned | — |
-| D-12 | Schedule | Sprint 1 work finished late, and two Sprint 1 stories moved out | Accepted | #4, #9 |
+| D-12 | Schedule | Sprint 1 work finished late, and one Sprint 1 story moved out | Accepted | #9 |
 | D-13 | Tracking | Jira is used alongside the GitHub Project backlog | Accepted | — |
+| D-14 | Complaints | Complaints are not yet tagged with the student's room | Planned | #4, #15 |
 
 ## Details
 
@@ -105,12 +106,19 @@ _Last updated: 27 Oct 2026, end of Sprint 1._
 ### D-12 · Sprint 1 schedule
 
 - **Deliverables say:** Sprint 1 runs 19–23 Oct 2026.
-- **Actual:** Sprint 1 development and reviews happened on 26–27 Oct. Delivered in Sprint 1: project setup (#1), CI pipeline (#7), login and roles (#3), fee records and payments (#8), and blocks and rooms (#10). **Not delivered in Sprint 1:** student registration (#9) and complaints (#4); they move to Sprint 2.
+- **Actual:** Sprint 1 development and reviews happened on 26–27 Oct. Delivered in Sprint 1: project setup (#1), CI pipeline (#7), login and roles (#3), fee records and payments (#8), blocks and rooms (#10), and complaints (#4). **Not delivered in Sprint 1:** student registration (#9); it moves to Sprint 2.
 
 ### D-13 · Jira is used alongside the GitHub Project
 
 - **Deliverables say:** item 1 — create the backlog in a GitHub Project.
 - **Actual:** the backlog, story points, sprints and priorities are in the GitHub Project "Hostel Management Backlog". The team also tracks the same stories in Jira (SCRUM-6 to SCRUM-16), and issues and PRs reference both. The GitHub Project is the reference for the deliverable.
+
+### D-14 · Complaints are not yet tagged with the student's room
+
+- **Documents say:** SRS §5.6 FR-6.2: "The complaint auto-tags the student's room and the time it was submitted." SAD §4.3: a new complaint is saved "as Open, with room and time".
+- **Implemented (Sprint 1, #32):** the complaint stores the student and the submission time, but not the room.
+- **Reason:** room allocation does not exist yet, so a student has no room to tag.
+- **Plan:** add the room link once allocation (#15) is merged, in Sprint 2.
 
 ## How to update this log
 
