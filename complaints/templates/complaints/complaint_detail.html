@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Complaint #{{ complaint.pk }} | HMS{% endblock %}
+
+{% block page_content %}
+<link rel="stylesheet" href="{% static 'complaints/css/complaints.css' %}">
+<main class="complaint-page complaint-page-narrow">
+  <a class="complaint-back" href="{% url 'complaints:my-complaints' %}">&larr; Back to my complaints</a>
+  <section class="area-card">
+    <h1>Complaint #{{ complaint.pk }}</h1>
+    <dl class="complaint-summary">
+      <dt>Status</dt>
+      <dd><span class="complaint-badge complaint-badge-{{ complaint.status }}">{{ complaint.get_status_display }}</span></dd>
+      <dt>Category</dt><dd>{{ complaint.get_category_display }}</dd>
+      <dt>Raised</dt><dd>{{ complaint.raised_at|date:"d M Y, H:i" }}</dd>
+      <dt>Last updated</dt><dd>{{ complaint.updated_at|date:"d M Y, H:i" }}</dd>
+      <dt>Description</dt><dd>{{ complaint.description|linebreaksbr }}</dd>
+    </dl>
+  </section>
+</main>
+{% endblock %}
