@@ -5,15 +5,19 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}HMS{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'accounts/css/auth.css' %}">
   </head>
   <body>
-    <header>
-      <h1>Hostel Management System</h1>
-    </header>
-    <main>
-      {% block content %}
-        <p>Project foundation is ready. Application features will be added in their own stories.</p>
-      {% endblock %}
-    </main>
+    {% if user.is_authenticated %}
+      <header class="site-header">
+        <a class="brand" href="{% url 'home' %}">HMS</a>
+        <form class="logout-form" method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button class="logout-button" type="submit">Log out</button>
+        </form>
+      </header>
+    {% endif %}
+    {% block page_content %}{% endblock %}
+    <script src="{% static 'accounts/js/login.js' %}"></script>
   </body>
 </html>

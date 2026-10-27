@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}{{ area_name }} | HMS{% endblock %}
+
+{% block page_content %}
+<main class="area-page">
+  <section class="area-card" aria-labelledby="area-title">
+    <h1 id="area-title">{{ area_name }}</h1>
+    <p>You are signed in as {{ request.user.get_full_name|default:request.user.srn }}.</p>
+    <p>Feature-specific dashboard content will be delivered in its own story.</p>
+  </section>
+</main>
+{% endblock %}
