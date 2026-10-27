@@ -21,7 +21,8 @@ contains only the project infrastructure and the custom user-model foundation:
 
 The SCRUM-6 login page authenticates with SRN and password, redirects users according
 to their stored Student/Admin role, protects the two post-login landing routes, and
-supports POST logout. Registration, room management/allocation, feature dashboards,
+supports POST logout. SCRUM-7 adds Student self-registration with duplicate SRN/email
+checks and Django password validation. Room management/allocation, feature dashboards,
 fees, complaints, visitors, search, and reports remain separate stories.
 
 ## Local setup
