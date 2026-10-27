@@ -50,7 +50,8 @@ class Complaint(models.Model):
 
     def change_status(self, new_status):
         """Move to the next status only. Skipping, going back or repeating raises (FR-6.4)."""
-        if self.NEXT_STATUS.get(self.status) != new_status:
+        next_status = self.NEXT_STATUS.get(self.status)
+        if next_status is None or next_status != new_status:
             new_label = dict(self.Status.choices).get(new_status, new_status)
             raise ValidationError(
                 f"A complaint cannot move from {self.get_status_display()} to {new_label}."
