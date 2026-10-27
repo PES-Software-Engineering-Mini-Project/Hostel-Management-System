@@ -4,7 +4,8 @@
 
 HMS is a server-rendered Django application for college-hostel operations. Existing
 requirements, proposal, test-plan, and architecture documents in this repository are
-preserved as the project source of truth.
+preserved as the project source of truth. Where the implementation differs from them,
+the difference and its reason are recorded in [docs/DEVIATIONS.md](docs/DEVIATIONS.md).
 
 ## Technology and current scope
 
