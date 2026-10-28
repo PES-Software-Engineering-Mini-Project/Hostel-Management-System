@@ -40,7 +40,14 @@ def register(request):
 
 @student_required
 def student_dashboard(request):
-    return render(request, "accounts/area.html", {"area_name": "Student area"})
+    from rooms.models import RoomApplication
+
+    allocation = getattr(request.user, "room_allocation", None)
+    pending_application = RoomApplication.objects.filter(
+        student=request.user,
+        status=RoomApplication.Status.PENDING,
+    ).exists()
+    return render(request, "accounts/area.html", {"area_name": "Student area","allocation":allocation,"pending_application":pending_application,})
 
 
 @admin_required

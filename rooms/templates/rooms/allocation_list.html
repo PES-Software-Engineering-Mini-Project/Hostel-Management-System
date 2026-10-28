@@ -1,0 +1,47 @@
+
+{% extends "base.html" %}
+
+{% block title %}Room Allocations | HMS{% endblock %}
+
+{% block page_content %}
+<main class="area-page">
+  <section class="area-card">
+    <h1>Room Allocations</h1>
+
+    {% for allocation in allocations %}
+      <article>
+        <h3>{{ allocation.student.get_full_name|default:allocation.student.srn }}</h3>
+        <p>SRN: {{ allocation.student.srn }}</p>
+        <p>Current room: {{ allocation.room.block.name }} - {{ allocation.room.room_number }}</p>
+
+        <form method="post" action="{% url 'rooms:move-student' allocation.id %}">
+          {% csrf_token %}
+          <label for="move-{{ allocation.id }}">Move to room</label>
+          <select id="move-{{ allocation.id }}" name="room_id" required>
+            <option value="">Choose destination</option>
+            {% for room in available_rooms %}
+              {% if room.id != allocation.room_id %}
+                <option value="{{ room.id }}">
+                  {{ room.block.name }} - {{ room.room_number }}
+                  ({{ room.occupied_count }}/{{ room.capacity }} occupied)
+                </option>
+              {% endif %}
+            {% endfor %}
+          </select>
+          <button type="submit">Move Student</button>
+        </form>
+
+        <form method="post" action="{% url 'rooms:deallocate-student' allocation.id %}">
+          {% csrf_token %}
+          <button type="submit">Deallocate Student</button>
+        </form>
+      </article>
+      <hr>
+    {% empty %}
+      <p>No current allocations.</p>
+    {% endfor %}
+
+    <p><a href="{% url 'rooms:pending-applications' %}">Pending Applications</a></p>
+  </section>
+</main>
+{% endblock %}
