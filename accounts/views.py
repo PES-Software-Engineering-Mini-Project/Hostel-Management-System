@@ -1,13 +1,24 @@
+from decimal import Decimal, ROUND_HALF_UP
+
+from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.views import LoginView
-from django.contrib import messages
+from django.db.models import Count, Q, Sum
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+from complaints.models import Complaint
+from fees.models import FeeRecord
+from rooms.models import Room
+
 from .decorators import admin_required, student_required
 from .forms import SRNAuthenticationForm, StudentRegistrationForm
 from .models import User
+
+
+ZERO = Decimal("0.00")
+PERCENTAGE_QUANTUM = Decimal("0.1")
 
 
 class RoleBasedLoginView(LoginView):
@@ -45,7 +56,44 @@ def student_dashboard(request):
 
 @admin_required
 def admin_dashboard(request):
-    return render(request, "accounts/area.html", {"area_name": "Admin area"})
+    """Show live, role-protected summary metrics for the hostel administrator."""
+    room_totals = Room.objects.aggregate(
+        total_rooms=Count("id"),
+        occupied_rooms=Count("id", filter=Q(occupied_count__gt=0)),
+        total_beds=Sum("capacity"),
+        occupied_beds=Sum("occupied_count"),
+    )
+    total_beds = room_totals["total_beds"] or 0
+    occupied_beds = room_totals["occupied_beds"] or 0
+    occupancy_percentage = (
+        (Decimal(occupied_beds) * 100 / Decimal(total_beds)).quantize(
+            PERCENTAGE_QUANTUM, rounding=ROUND_HALF_UP
+        )
+        if total_beds
+        else Decimal("0.0")
+    )
+
+    students_with_dues = set()
+    total_amount_owed = ZERO
+    for fee_record in FeeRecord.objects.with_totals().only("student_id", "amount_due"):
+        balance = fee_record.amount_due - fee_record.total_paid
+        if balance > ZERO:
+            students_with_dues.add(fee_record.student_id)
+            total_amount_owed += balance
+
+    active_complaints = Complaint.objects.filter(
+        status__in=[Complaint.Status.OPEN, Complaint.Status.IN_PROGRESS]
+    ).count()
+
+    context = {
+        "total_rooms": room_totals["total_rooms"],
+        "occupied_rooms": room_totals["occupied_rooms"],
+        "occupancy_percentage": occupancy_percentage,
+        "students_with_dues": len(students_with_dues),
+        "total_amount_owed": total_amount_owed,
+        "active_complaints": active_complaints,
+    }
+    return render(request, "accounts/admin_dashboard.html", context)
 
 
 @require_POST
