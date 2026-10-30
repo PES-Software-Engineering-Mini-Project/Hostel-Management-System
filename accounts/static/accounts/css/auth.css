@@ -69,7 +69,7 @@ button, input { font: inherit; }
 .supporting-text { color: var(--neutral-500); line-height: 1.55; margin: 0 0 2rem; }
 .field { margin-bottom: 1.2rem; }
 label { display: block; font-size: .93rem; font-weight: 750; margin-bottom: .5rem; }
-input[type="text"], input[type="password"] { border: 1px solid var(--neutral-200); border-radius: .65rem; color: var(--neutral-900); outline: none; padding: .8rem .9rem; transition: border-color .18s, box-shadow .18s; width: 100%; }
+input[type="text"], input[type="password"], input[type="email"], input[type="number"] { border: 1px solid var(--neutral-200); border-radius: .65rem; color: var(--neutral-900); outline: none; padding: .8rem .9rem; transition: border-color .18s, box-shadow .18s; width: 100%; }
 input:focus-visible, button:focus-visible, a:focus-visible { box-shadow: 0 0 0 3px rgb(31 156 155 / .28); outline: 2px solid transparent; }
 input:focus { border-color: var(--teal-500); }
 .password-wrap { position: relative; }
@@ -95,4 +95,18 @@ input:focus { border-color: var(--teal-500); }
   .welcome-panel h1 { max-width: none; }
   .hostel-illustration { height: 6rem; margin-top: 0; transform: scale(.7); transform-origin: left bottom; }
   .login-panel { padding: 2.5rem 1.5rem 3.5rem; }
+}
+
+.student-table { border-collapse: collapse; margin-top: 1rem; width: 100%; }
+.student-table th, .student-table td { border-bottom: 1px solid var(--neutral-200); padding: .55rem .8rem; text-align: left; white-space: nowrap; }
+.student-table th { color: var(--neutral-700, #3f4756); font-size: .85rem; text-transform: uppercase; letter-spacing: .04em; }
+.table-scroll { max-width: 100%; overflow-x: auto; }
+.area-page-wide { max-width: 64rem; }
+.site-nav { display: flex; flex-wrap: wrap; gap: .5rem 1rem; margin-left: 1.5rem; margin-right: auto; }
+.site-nav a { color: var(--neutral-700, #3f4756); font-weight: 600; text-decoration: none; }
+.site-nav a:hover { color: var(--teal-500); }
+
+@media (max-width: 40rem) {
+  .site-header { flex-wrap: wrap; row-gap: .5rem; }
+  .site-nav { margin-left: 0; order: 3; width: 100%; }
 }
