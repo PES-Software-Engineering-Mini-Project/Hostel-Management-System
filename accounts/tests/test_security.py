@@ -45,6 +45,8 @@ class SecurityTestCase(TestCase):
             reverse("fees:record-payment", args=[self.fee_record.pk]),
             reverse("complaints:complaint-list"),
             reverse("complaints:update-status", args=[self.complaint.pk]),
+            reverse("student-list"),
+            reverse("student-edit", args=[self.student.pk]),
         ]
 
 
