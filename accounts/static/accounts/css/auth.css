@@ -102,6 +102,11 @@ input:focus { border-color: var(--teal-500); }
 .student-table th { color: var(--neutral-700, #3f4756); font-size: .85rem; text-transform: uppercase; letter-spacing: .04em; }
 .table-scroll { max-width: 100%; overflow-x: auto; }
 .area-page-wide { max-width: 64rem; }
-.site-nav { display: flex; gap: 1rem; margin-left: 1.5rem; margin-right: auto; }
+.site-nav { display: flex; flex-wrap: wrap; gap: .5rem 1rem; margin-left: 1.5rem; margin-right: auto; }
 .site-nav a { color: var(--neutral-700, #3f4756); font-weight: 600; text-decoration: none; }
 .site-nav a:hover { color: var(--teal-500); }
+
+@media (max-width: 40rem) {
+  .site-header { flex-wrap: wrap; row-gap: .5rem; }
+  .site-nav { margin-left: 0; order: 3; width: 100%; }
+}
