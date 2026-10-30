@@ -19,7 +19,7 @@ class Block(models.Model):
     def clean(self):
         super().clean()
 
-        if self.number_of_floors is not None:
+        if self.pk and self.number_of_floors is not None:
             highest_room_floor = self.rooms.aggregate(
                 highest=models.Max("floor")
             )["highest"]
