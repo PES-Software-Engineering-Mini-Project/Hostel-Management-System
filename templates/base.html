@@ -16,11 +16,13 @@
             <a href="{% url 'admin-dashboard' %}">Dashboard</a>
             <a href="{% url 'fees:fee-list' %}">Fees</a>
             <a href="{% url 'complaints:complaint-list' %}">Complaints</a>
+            <a href="{% url 'student-list' %}">Students</a>
           {% else %}
             <a href="{% url 'student-dashboard' %}">Dashboard</a>
             <a href="{% url 'fees:my-fees' %}">My fees</a>
             <a href="{% url 'complaints:my-complaints' %}">My complaints</a>
             <a href="{% url 'complaints:raise' %}">Raise a complaint</a>
+            <a href="{% url 'profile-edit' %}">My profile</a>
           {% endif %}
         </nav>
         <form class="logout-form" method="post" action="{% url 'logout' %}">
