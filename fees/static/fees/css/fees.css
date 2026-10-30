@@ -1,4 +1,4 @@
-.fee-page { margin: 2.5rem auto; max-width: 64rem; padding: 0 1.25rem; }
+.fee-page { margin: 2.5rem auto; max-width: 72rem; padding: 0 1.25rem; }
 .fee-page-narrow { max-width: 36rem; }
 .fee-page h1 { font-size: 1.9rem; letter-spacing: -.03em; margin: 0 0 1.25rem; }
 .fee-page h2 { font-size: 1.2rem; margin: 0; }
@@ -10,7 +10,7 @@
 
 .fee-table-wrap { overflow-x: auto; }
 .fee-table { background: var(--surface); border: 1px solid var(--neutral-200); border-collapse: collapse; border-radius: .75rem; width: 100%; }
-.fee-table th, .fee-table td { border-bottom: 1px solid var(--neutral-200); padding: .75rem .9rem; text-align: left; white-space: nowrap; }
+.fee-table th, .fee-table td { border-bottom: 1px solid var(--neutral-200); padding: .6rem .7rem; text-align: left; white-space: nowrap; }
 .fee-table th { color: var(--neutral-500); font-size: .82rem; letter-spacing: .04em; text-transform: uppercase; }
 .fee-table .num { font-variant-numeric: tabular-nums; text-align: right; }
 .fee-table a { color: var(--blue-600); font-weight: 700; }
