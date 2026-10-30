@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Student records | HMS{% endblock %}
+
+{% block page_content %}
+<main class="area-page">
+  <section class="area-card" aria-labelledby="students-title">
+    <h1 id="students-title">Student records</h1>
+    {% include "complaints/_messages.html" %}
+    {% if students %}
+      <table class="student-table">
+        <thead>
+          <tr>
+            <th>SRN</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Contact number</th>
+            <th>Branch</th>
+            <th>Year</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for student in students %}
+            <tr>
+              <td>{{ student.srn }}</td>
+              <td>{{ student.get_full_name }}</td>
+              <td>{{ student.email }}</td>
+              <td>{{ student.contact_number }}</td>
+              <td>{{ student.branch }}</td>
+              <td>{{ student.year_of_study }}</td>
+              <td><a href="{% url 'student-edit' student.pk %}">Edit</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No students registered yet.</p>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}
