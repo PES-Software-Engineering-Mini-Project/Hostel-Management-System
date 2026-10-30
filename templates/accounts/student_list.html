@@ -3,12 +3,12 @@
 {% block title %}Student records | HMS{% endblock %}
 
 {% block page_content %}
-<main class="area-page">
+<main class="area-page area-page-wide">
   <section class="area-card" aria-labelledby="students-title">
     <h1 id="students-title">Student records</h1>
     {% include "complaints/_messages.html" %}
     {% if students %}
-      <table class="student-table">
+      <div class="table-scroll"><table class="student-table">
         <thead>
           <tr>
             <th>SRN</th>
@@ -33,7 +33,7 @@
             </tr>
           {% endfor %}
         </tbody>
-      </table>
+      </table></div>
     {% else %}
       <p>No students registered yet.</p>
     {% endif %}
