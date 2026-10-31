@@ -5,7 +5,7 @@ from django.views.decorators.http import require_POST
 
 from accounts.decorators import admin_required, student_required
 
-from .forms import ComplaintForm
+from .forms import ComplaintFilterForm, ComplaintForm
 from .models import Complaint
 
 
@@ -23,7 +23,14 @@ def raise_complaint(request):
 
 @student_required
 def my_complaints(request):
-    return render(request, "complaints/my_complaints.html", {"complaints": request.user.complaints.all()})
+    # Starting from the student's own complaints keeps their search private (FR-9.5).
+    filter_form = ComplaintFilterForm(request.GET)
+    complaints = filter_form.filter(request.user.complaints.all())
+    return render(
+        request,
+        "complaints/my_complaints.html",
+        {"complaints": complaints, "filter_form": filter_form},
+    )
 
 
 @student_required
@@ -35,8 +42,13 @@ def complaint_detail(request, pk):
 
 @admin_required
 def complaint_list(request):
-    complaints = Complaint.objects.select_related("student")
-    return render(request, "complaints/complaint_list.html", {"complaints": complaints})
+    filter_form = ComplaintFilterForm(request.GET)
+    complaints = filter_form.filter(Complaint.objects.select_related("student"))
+    return render(
+        request,
+        "complaints/complaint_list.html",
+        {"complaints": complaints, "filter_form": filter_form},
+    )
 
 
 @admin_required

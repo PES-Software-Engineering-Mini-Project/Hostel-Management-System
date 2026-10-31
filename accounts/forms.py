@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.db.models import Q, Value
+from django.db.models.functions import Concat
 
 from .models import User
 
@@ -163,3 +165,32 @@ class AdminStudentForm(forms.ModelForm):
         ):
             raise ValidationError("An account with this email address already exists.")
         return email
+
+
+class StudentSearchForm(forms.Form):
+    """Admin search over student records by partial name or SRN (FR-9.1)."""
+
+    q = forms.CharField(
+        required=False,
+        max_length=60,
+        label="Search students",
+        widget=forms.TextInput(attrs={"placeholder": "Name or SRN", "type": "search"}),
+    )
+
+    def filter(self, students):
+        self.is_valid()
+        query = " ".join(getattr(self, "cleaned_data", {}).get("q", "").split())
+        if not query:
+            return students
+        return students.annotate(
+            full_name=Concat("first_name", Value(" "), "last_name")
+        ).filter(
+            Q(srn__icontains=query)
+            | Q(first_name__icontains=query)
+            | Q(last_name__icontains=query)
+            | Q(full_name__icontains=query)
+        )
+
+    @property
+    def is_filtering(self):
+        return bool(self.data.get("q", "").strip())

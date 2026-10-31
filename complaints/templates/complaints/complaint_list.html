@@ -10,6 +10,7 @@
     <h1>Manage complaints</h1>
   </div>
   {% include "complaints/_messages.html" %}
+  {% include "_filter_bar.html" with form=filter_form %}
 
   {% if complaints %}
     <div class="complaint-table-wrap">
@@ -55,7 +56,11 @@
       </table>
     </div>
   {% else %}
-    <p class="complaint-empty">No complaints yet.</p>
+    {% if filter_form.is_filtering %}
+      <p class="complaint-empty no-results">No results found. Try a different status or category.</p>
+    {% else %}
+      <p class="complaint-empty">No complaints yet.</p>
+    {% endif %}
   {% endif %}
 </main>
 {% endblock %}

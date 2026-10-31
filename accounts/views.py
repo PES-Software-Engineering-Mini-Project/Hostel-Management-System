@@ -17,6 +17,7 @@ from .forms import (
     AdminStudentForm,
     SRNAuthenticationForm,
     StudentProfileForm,
+    StudentSearchForm,
     StudentRegistrationForm,
 )
 from .models import User
@@ -127,8 +128,13 @@ def profile_edit(request):
 
 @admin_required
 def student_list(request):
-    students = User.objects.filter(role=User.Role.STUDENT).order_by("srn")
-    return render(request, "accounts/student_list.html", {"students": students})
+    search_form = StudentSearchForm(request.GET)
+    students = search_form.filter(User.objects.filter(role=User.Role.STUDENT)).order_by("srn")
+    return render(
+        request,
+        "accounts/student_list.html",
+        {"students": students, "search_form": search_form},
+    )
 
 
 @admin_required

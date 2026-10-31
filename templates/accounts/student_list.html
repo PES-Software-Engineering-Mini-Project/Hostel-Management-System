@@ -7,6 +7,7 @@
   <section class="area-card" aria-labelledby="students-title">
     <h1 id="students-title">Student records</h1>
     {% include "complaints/_messages.html" %}
+    {% include "_filter_bar.html" with form=search_form submit_label="Search" %}
     {% if students %}
       <div class="table-scroll"><table class="student-table">
         <thead>
@@ -35,7 +36,11 @@
         </tbody>
       </table></div>
     {% else %}
-      <p>No students registered yet.</p>
+      {% if search_form.is_filtering %}
+        <p class="no-results">No results found for &ldquo;{{ search_form.data.q }}&rdquo;.</p>
+      {% else %}
+        <p>No students registered yet.</p>
+      {% endif %}
     {% endif %}
   </section>
 </main>
