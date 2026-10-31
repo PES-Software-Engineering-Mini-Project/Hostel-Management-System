@@ -2,6 +2,7 @@
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.conf import settings
 
 
 class Block(models.Model):
@@ -133,3 +134,56 @@ class Room(models.Model):
                 "A room with current occupants cannot be deleted."
             )
         return super().delete(*args, **kwargs)
+
+class RoomApplication(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        ALLOTTED = "allotted", "Allotted"
+        REJECTED = "rejected", "Rejected"
+
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="room_applications",
+    )
+    preferred_block = models.ForeignKey(
+        Block,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="room_applications",
+    )
+    preferred_room_type = models.CharField(
+        max_length=20,
+        choices=Room.RoomType.choices,
+        blank=True,
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+    )
+    applied_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["applied_at"]
+
+    def __str__(self):
+        return f"{self.student.srn} - {self.get_status_display()}"
+
+
+class RoomAllocation(models.Model):
+    student = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="room_allocation",
+    )
+    room = models.ForeignKey(
+        Room,
+        on_delete=models.PROTECT,
+        related_name="allocations",
+    )
+    allocated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.student.srn} - {self.room}"
