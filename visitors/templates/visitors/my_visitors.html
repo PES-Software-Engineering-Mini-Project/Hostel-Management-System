@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My visitors | HMS{% endblock %}
+
+{% block page_content %}
+<link rel="stylesheet" href="{% static 'visitors/css/visitors.css' %}">
+<main class="visitor-page">
+  <div class="visitor-heading">
+    <h1>My visitors</h1>
+    <a class="visitor-link" href="{% url 'visitors:register' %}">Register a visitor</a>
+  </div>
+  {% include "visitors/_messages.html" %}
+  {% if visitors %}
+    <div class="visitor-table-wrap">
+      <table class="visitor-table">
+        <thead>
+          <tr>
+            <th scope="col">Visitor</th>
+            <th scope="col">Phone</th>
+            <th scope="col">Purpose</th>
+            <th scope="col">Entered</th>
+            <th scope="col">Exited</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for visitor in visitors %}
+            <tr>
+              <td>{{ visitor.name }}</td>
+              <td>{{ visitor.phone }}</td>
+              <td>{{ visitor.purpose }}</td>
+              <td class="when">{{ visitor.entered_at|date:"d M Y, H:i" }}</td>
+              <td class="when">{% if visitor.exited_at %}{{ visitor.exited_at|date:"d M Y, H:i" }}{% else %}<span class="visitor-badge visitor-badge-inside">Inside</span>{% endif %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="visitor-empty">You have not registered any visitors yet.</p>
+  {% endif %}
+</main>
+{% endblock %}
