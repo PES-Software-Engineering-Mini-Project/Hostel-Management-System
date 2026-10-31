@@ -27,7 +27,7 @@ _Last updated: 1 Nov 2026, end of Sprint 2 (rooms, allocation, dashboard, profil
 | D-08 | Rooms | Extra "Dormitory" room type not in the SRS | **Resolved** | #29, PR #36 |
 | D-09 | Rooms | Room fee stored as `monthly_fee`; fees are tracked per term | **Resolved** | #14, PR #47 |
 | D-10 | Testing | Automated tests are not labelled with Test Plan case IDs (TC-xx) | Planned | — |
-| D-11 | Testing | CI ran on SQLite only, not also on PostgreSQL | **Resolved** | #23, PR #45 |
+| D-11 | Testing | CI ran on SQLite only, not also on PostgreSQL | **Resolved** | #23, PR #45 → #51 |
 | D-12 | Schedule | Sprints ran late; visitors and complaint room tags move to Sprint 3 | Accepted | #5, #49 |
 | D-13 | Tracking | Jira is used alongside the GitHub Project backlog | Accepted | — |
 | D-14 | Complaints | Complaints are not yet tagged with the student's room | Planned | #49 (Sprint 3) |
@@ -111,7 +111,7 @@ _Last updated: 1 Nov 2026, end of Sprint 2 (rooms, allocation, dashboard, profil
 - **SAD says:** §3.7: "Run the tests on PostgreSQL as well before release" (SQLite and PostgreSQL behave differently).
 - **Implemented:** the GitHub Actions pipeline runs the full suite on SQLite (Python 3.10 and 3.12).
 - **Plan:** add a PostgreSQL service job to CI before the final release.
-- **Resolved (PR #45, Sprint 2):** each CI job runs the full suite twice, on SQLite (as used locally) and on a PostgreSQL 17 service. The concurrent-allotment test (NFR-4) needs real row locks, so it runs only on PostgreSQL and is skipped on SQLite.
+- **Resolved (PR #45, landed on `main` by PR #51, Sprint 2):** each CI job runs the full suite twice, on SQLite (as used locally) and on a PostgreSQL 17 service. The concurrent-allotment test (NFR-4) needs real row locks, so it runs only on PostgreSQL and is skipped on SQLite.
 
 ### D-12 · Sprint schedule
 
