@@ -15,6 +15,9 @@ def raise_complaint(request):
     if request.method == "POST" and form.is_valid():
         complaint = form.save(commit=False)
         complaint.student = request.user  # never taken from the form (NFR-3)
+        # FR-6.2: snapshot of the current room, from the server, never the form. None if no room.
+        allocation = getattr(request.user, "room_allocation", None)
+        complaint.room = allocation.room if allocation else None
         complaint.save()  # status is not in the form, so it always starts as Open (FR-6.3)
         messages.success(request, "Your complaint has been submitted.")
         return redirect("complaints:my-complaints")
@@ -25,7 +28,7 @@ def raise_complaint(request):
 def my_complaints(request):
     # Starting from the student's own complaints keeps their search private (FR-9.5).
     filter_form = ComplaintFilterForm(request.GET)
-    complaints = filter_form.filter(request.user.complaints.all())
+    complaints = filter_form.filter(request.user.complaints.select_related("room__block"))
     return render(
         request,
         "complaints/my_complaints.html",
@@ -36,14 +39,16 @@ def my_complaints(request):
 @student_required
 def complaint_detail(request, pk):
     # Filtering by student makes someone else's complaint a 404, not a 403 (NFR-3, FR-6.6).
-    complaint = get_object_or_404(Complaint, pk=pk, student=request.user)
+    complaint = get_object_or_404(
+        Complaint.objects.select_related("room__block"), pk=pk, student=request.user
+    )
     return render(request, "complaints/complaint_detail.html", {"complaint": complaint})
 
 
 @admin_required
 def complaint_list(request):
     filter_form = ComplaintFilterForm(request.GET)
-    complaints = filter_form.filter(Complaint.objects.select_related("student"))
+    complaints = filter_form.filter(Complaint.objects.select_related("student", "room__block"))
     return render(
         request,
         "complaints/complaint_list.html",
