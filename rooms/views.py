@@ -124,9 +124,8 @@ def move_student(request, allocation_id):
     try:
         with transaction.atomic():
             allocation = get_object_or_404(
-                RoomAllocation.objects.select_related("room"),
-                pk=allocation_id,
-            )
+            RoomAllocation.objects.select_for_update().select_related("room"),
+            pk=allocation_id,)
 
             new_room = get_object_or_404(
                 Room,
