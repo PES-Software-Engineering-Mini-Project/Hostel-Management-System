@@ -35,14 +35,6 @@ jobs:
       matrix:
         python-version: ["3.10", "3.12"]
 
-    env:
-      DATABASE_ENGINE: django.db.backends.postgresql
-      POSTGRES_DB: hostel_concurrency_test
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ci_test_password
-      POSTGRES_HOST: localhost
-      POSTGRES_PORT: 5432
-
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -64,5 +56,16 @@ jobs:
       - name: Check for missing migrations
         run: python manage.py makemigrations --check --dry-run
 
-      - name: Run tests
+      - name: Run tests (SQLite, as used locally)
+        run: python manage.py test --verbosity 2
+
+      # SAD 3.7: run the suite on PostgreSQL as well; row-locking tests only run here.
+      - name: Run tests (PostgreSQL)
+        env:
+          DATABASE_ENGINE: django.db.backends.postgresql
+          POSTGRES_DB: hostel_concurrency_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci_test_password
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
         run: python manage.py test --verbosity 2

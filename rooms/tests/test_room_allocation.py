@@ -1,9 +1,9 @@
-﻿from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier
 
 from django.contrib.messages import get_messages
 from django.db import close_old_connections, connection
-from django.test import Client, TestCase, TransactionTestCase
+from django.test import Client, TestCase, TransactionTestCase, skipUnlessDBFeature
 from django.urls import reverse
 
 from accounts.models import User
@@ -261,6 +261,10 @@ class RoomAllocationTests(RoomApplicationTests):
 
         self.assertEqual(response.status_code, 403)
 
+
+# SQLite has no row locks and fails concurrent writes with "table is locked", so this
+# runs on PostgreSQL only (the CI PostgreSQL step).
+@skipUnlessDBFeature("has_select_for_update")
 class ConcurrentRoomAllocationTests(TransactionTestCase):
     reset_sequences = True
 
