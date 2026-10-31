@@ -11,7 +11,7 @@ Requirements document (`FR_NFR.pdf`).
 **Status values:** *Accepted* (a deliberate change we are keeping) · *Planned* (will be
 brought in line, tracked by an issue) · *Open* (a decision is still needed).
 
-_Last updated: 27 Oct 2026, end of Sprint 1._
+_Last updated: 27 Oct 2026, end of Sprint 1 (after #33, student registration)._
 
 ## Summary
 
@@ -28,7 +28,7 @@ _Last updated: 27 Oct 2026, end of Sprint 1._
 | D-09 | Rooms | Room fee stored as `monthly_fee`; fees are tracked per term | Open | #29, #14 |
 | D-10 | Testing | Automated tests are not labelled with Test Plan case IDs (TC-xx) | Planned | — |
 | D-11 | Testing | CI runs on SQLite only, not also on PostgreSQL | Planned | — |
-| D-12 | Schedule | Sprint 1 work finished late, and one Sprint 1 story moved out | Accepted | #9 |
+| D-12 | Schedule | Sprint 1 work was done on 26–27 Oct instead of 19–23 Oct | Accepted | — |
 | D-13 | Tracking | Jira is used alongside the GitHub Project backlog | Accepted | — |
 | D-14 | Complaints | Complaints are not yet tagged with the student's room | Planned | #4, #15 |
 
@@ -106,7 +106,7 @@ _Last updated: 27 Oct 2026, end of Sprint 1._
 ### D-12 · Sprint 1 schedule
 
 - **Deliverables say:** Sprint 1 runs 19–23 Oct 2026.
-- **Actual:** Sprint 1 development and reviews happened on 26–27 Oct. Delivered in Sprint 1: project setup (#1), CI pipeline (#7), login and roles (#3), fee records and payments (#8), blocks and rooms (#10), and complaints (#4). **Not delivered in Sprint 1:** student registration (#9); it moves to Sprint 2.
+- **Actual:** Sprint 1 development and reviews happened on 26–27 Oct, after the planned window. All planned Sprint 1 stories were delivered: project setup (#1), CI pipeline (#7), login and roles (#3), student registration (#9), fee records and payments (#8), blocks and rooms (#10), and complaints (#4). Known defects in blocks and rooms carry over to Sprint 2 (see D-07).
 
 ### D-13 · Jira is used alongside the GitHub Project
 

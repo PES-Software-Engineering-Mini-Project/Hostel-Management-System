@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}{{ area_name }} | HMS{% endblock %}
 
@@ -7,12 +7,31 @@
   <section class="area-card" aria-labelledby="area-title">
     <h1 id="area-title">{{ area_name }}</h1>
     <p>You are signed in as {{ request.user.get_full_name|default:request.user.srn }}.</p>
-    <p>Feature-specific dashboard content will be delivered in its own story.</p>
-    {% if request.user.role == "admin" %}
+{% if request.user.role == "student" %}
+  <h2>Room Information</h2>
+
+  {% if allocation %}
+    <p><strong>Allocated Block:</strong> {{ allocation.room.block.name }}</p>
+    <p><strong>Room Number:</strong> {{ allocation.room.room_number }}</p>
+    <p><strong>Room Type:</strong> {{ allocation.room.room_type }}</p>
+  {% elif pending_application %}
+    <p>Your room application is pending admin approval.</p>
+  {% else %}
+    <p>You do not have an allotted room yet.</p>
+    <p><a href="{% url 'rooms:apply' %}">Apply for a Room</a></p>
+  {% endif %}
+{% endif %}
+
+{% if request.user.role == "admin" %}
+      <p><a href="{% url 'rooms:room-list' %}">Manage Rooms</a></p>
+      <p><a href="{% url 'rooms:pending-applications' %}">Pending Room Applications</a></p>
+      <p><a href="{% url 'rooms:allocation-list' %}">Manage Room Allocations</a></p>
       <p><a href="{% url 'fees:fee-list' %}">Manage fees</a></p>
+      <p><a href="{% url 'student-list' %}">Student records</a></p>
       <p><a href="{% url 'complaints:complaint-list' %}">Manage complaints</a></p>
     {% else %}
       <p><a href="{% url 'fees:my-fees' %}">View my fees</a></p>
+      <p><a href="{% url 'profile-edit' %}">My profile</a></p>
       <p><a href="{% url 'complaints:raise' %}">Raise a complaint</a></p>
       <p><a href="{% url 'complaints:my-complaints' %}">My complaints</a></p>
     {% endif %}
