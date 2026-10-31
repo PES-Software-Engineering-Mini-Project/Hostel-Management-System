@@ -1,4 +1,9 @@
 
+{% extends "base.html" %}
+
+{% block title %}Add Block | HMS{% endblock %}
+
+{% block page_content %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,6 +19,8 @@
         <button type="submit">Save Block</button>
     </form>
 
-    <p><a href="{% url 'rooms:room-list' %}">Back to Rooms</a></p>
-</body>
+    <p>
+        <a href="{% url 'rooms:room-list' %}">Back to Rooms</a>
+    </p>
 </html>
+{% endblock %}

@@ -109,3 +109,57 @@ class StudentRegistrationForm(forms.ModelForm):
             contact_number=self.cleaned_data["contact_number"],
             role=User.Role.STUDENT,
         )
+
+
+class StudentProfileForm(forms.ModelForm):
+    """Lets a student update their own contact details.
+
+    SRN and role are intentionally excluded so they stay read-only server-side,
+    even if a request posts extra fields (FR-2.3, NFR-3).
+    """
+
+    class Meta:
+        model = User
+        fields = ["email", "contact_number", "branch", "year_of_study"]
+        widgets = {
+            "email": forms.EmailInput(attrs={"autocomplete": "email"}),
+            "contact_number": forms.TextInput(attrs={"autocomplete": "tel"}),
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+        if (
+            User.objects.filter(email__iexact=email)
+            .exclude(pk=self.instance.pk)
+            .exists()
+        ):
+            raise ValidationError("An account with this email address already exists.")
+        return email
+
+
+class AdminStudentForm(forms.ModelForm):
+    """Lets an admin correct a student's record (FR-2.4).
+
+    SRN and role stay read-only; they are identity, not editable record data.
+    """
+
+    class Meta:
+        model = User
+        fields = [
+            "first_name",
+            "last_name",
+            "email",
+            "contact_number",
+            "branch",
+            "year_of_study",
+        ]
+
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+        if (
+            User.objects.filter(email__iexact=email)
+            .exclude(pk=self.instance.pk)
+            .exists()
+        ):
+            raise ValidationError("An account with this email address already exists.")
+        return email
