@@ -1,7 +1,12 @@
+from decimal import Decimal
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
+from complaints.models import Complaint
+from fees.models import FeeRecord
+from rooms.models import Block, Room
 
 class AuthenticationFlowTests(TestCase):
     def setUp(self):
@@ -58,6 +63,65 @@ class AuthenticationFlowTests(TestCase):
         response = self.client.get(reverse("admin-dashboard"))
 
         self.assertRedirects(response, f"{reverse('login')}?next={reverse('admin-dashboard')}")
+
+    def test_admin_dashboard_shows_live_room_fee_and_complaint_metrics(self):
+        block = Block.objects.create(name="A Block", number_of_floors=2)
+        Room.objects.create(
+            block=block, room_number="101", floor=1, room_type=Room.RoomType.DOUBLE,
+            capacity=2, monthly_fee=Decimal("5000.00"), occupied_count=1,
+        )
+        Room.objects.create(
+            block=block, room_number="102", floor=1, room_type=Room.RoomType.SINGLE,
+            capacity=1, monthly_fee=Decimal("6000.00"), occupied_count=1,
+        )
+        second_student = get_user_model().objects.create_user(
+            srn="PES1UG23CS012", email="second@example.com", password="student-password",
+            first_name="Second", last_name="Student", contact_number="9876543212",
+        )
+        first_fee = FeeRecord.objects.create(
+            student=self.student, term="2026-27 Odd", amount_due=Decimal("100.00")
+        )
+        first_fee.record_payment(
+            amount=Decimal("40.00"), paid_on="2026-10-01", recorded_by=self.admin_user
+        )
+        second_fee = FeeRecord.objects.create(
+            student=self.student, term="2026-27 Even", amount_due=Decimal("30.00")
+        )
+        second_fee.record_payment(
+            amount=Decimal("10.00"), paid_on="2026-10-01", recorded_by=self.admin_user
+        )
+        paid_fee = FeeRecord.objects.create(
+            student=second_student, term="2026-27 Odd", amount_due=Decimal("50.00")
+        )
+        paid_fee.record_payment(
+            amount=Decimal("50.00"), paid_on="2026-10-01", recorded_by=self.admin_user
+        )
+        Complaint.objects.create(
+            student=self.student, category=Complaint.Category.PLUMBING, description="Leaking tap."
+        )
+        Complaint.objects.create(
+            student=second_student, category=Complaint.Category.ELECTRICAL,
+            description="Light is not working.", status=Complaint.Status.IN_PROGRESS,
+        )
+        Complaint.objects.create(
+            student=second_student, category=Complaint.Category.CLEANING,
+            description="Resolved complaint.", status=Complaint.Status.RESOLVED,
+        )
+        self.client.force_login(self.admin_user)
+
+        response = self.client.get(reverse("admin-dashboard"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["total_rooms"], 2)
+        self.assertEqual(response.context["occupied_rooms"], 2)
+        self.assertEqual(response.context["occupancy_percentage"], Decimal("66.7"))
+        self.assertEqual(response.context["students_with_dues"], 1)
+        self.assertEqual(response.context["total_amount_owed"], Decimal("80.00"))
+        self.assertEqual(response.context["active_complaints"], 2)
+        self.assertContains(response, "66.7% of beds occupied")
+        self.assertContains(response, "₹80.00 outstanding")
+        self.assertContains(response, "Open or In Progress")
+        self.assertContains(response, "Available when room allocation is implemented.")
 
     def test_logout_ends_the_session_and_protected_area_requires_login(self):
         self.client.force_login(self.student)
