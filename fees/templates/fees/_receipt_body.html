@@ -1,0 +1,25 @@
+<header class="receipt-header">
+  <div>
+    <p class="receipt-eyebrow">Hostel Management System</p>
+    <h1>Fee payment receipt</h1>
+  </div>
+  <p class="receipt-number">Receipt no.<br><strong>{{ payment.receipt_number }}</strong></p>
+</header>
+<dl class="fee-summary receipt-details">
+  <dt>Student</dt><dd>{{ payment.fee_record.student.get_full_name|default:payment.fee_record.student.srn }}</dd>
+  <dt>SRN</dt><dd>{{ payment.fee_record.student.srn }}</dd>
+  <dt>Room</dt>
+  <dd>
+    {% if payment.fee_record.room %}
+      {{ payment.fee_record.room.block.name }}, room {{ payment.fee_record.room.room_number }}
+    {% else %}
+      Not recorded
+    {% endif %}
+  </dd>
+  <dt>Term</dt><dd>{{ payment.fee_record.term }}</dd>
+  <dt>Payment date</dt><dd>{{ payment.paid_on|date:"j M Y" }}</dd>
+  <dt>Amount paid</dt><dd><strong>&#8377;{{ payment.amount }}</strong></dd>
+  <dt>Term fee</dt><dd>&#8377;{{ payment.fee_record.amount_due }}</dd>
+  <dt>Balance after payment</dt><dd>&#8377;{{ payment.balance_after }}</dd>
+  <dt>Recorded by</dt><dd>{{ payment.recorded_by.get_full_name|default:payment.recorded_by.srn }}</dd>
+</dl>
