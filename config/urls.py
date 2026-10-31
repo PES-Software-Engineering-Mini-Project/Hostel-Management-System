@@ -8,5 +8,6 @@ urlpatterns = [
     path("", RedirectView.as_view(pattern_name="login", permanent=False), name="home"),
     path("", include("accounts.urls")),
     path("fees/", include("fees.urls")),
+    path("rooms/", include("rooms.urls")),
     path("complaints/", include("complaints.urls")),
 ]
