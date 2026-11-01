@@ -1,4 +1,9 @@
 
+  {% extends "base.html" %}
+
+{% block title %}Room Management | HMS{% endblock %}
+
+{% block page_content %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,6 +11,7 @@
     <title>Room Management</title>
 </head>
 <body>
+
     <h1>Hostel Room Management</h1>
 
     <p>
@@ -39,20 +45,21 @@
         </tr>
 
         {% for room in rooms %}
-        <tr>
-            <td>{{ room.block.name }}</td>
-            <td>{{ room.room_number }}</td>
-            <td>{{ room.floor }}</td>
-            <td>{{ room.room_type }}</td>
-            <td>{{ room.capacity }}</td>
-            <td>{{ room.occupied_count }}</td>
-            <td>{{ room.monthly_fee }}</td>
-        </tr>
+            <tr>
+                <td>{{ room.block.name }}</td>
+                <td>{{ room.room_number }}</td>
+                <td>{{ room.floor }}</td>
+                <td>{{ room.room_type }}</td>
+                <td>{{ room.capacity }}</td>
+                <td>{{ room.occupied_count }}</td>
+                <td>{{ room.monthly_fee }}</td>
+            </tr>
         {% empty %}
-        <tr>
-            <td colspan="7">No rooms available.</td>
-        </tr>
+            <tr>
+                <td colspan="7">No rooms available.</td>
+            </tr>
         {% endfor %}
     </table>
 </body>
 </html>
+{% endblock %}

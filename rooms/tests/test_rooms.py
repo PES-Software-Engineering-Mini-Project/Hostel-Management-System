@@ -4,7 +4,6 @@ from django.test import TestCase
 from django.db import IntegrityError, transaction
 from rooms.models import Block, Room
 from django.urls import reverse
-from django.test import TestCase
 from accounts.models import User
 
 class RoomDeletionTests(TestCase):
@@ -285,6 +284,46 @@ class RoomAccessControlTests(TestCase):
         response = self.client.get(reverse("rooms:room-create"))
 
         self.assertEqual(response.status_code, 200)
+
+    def test_admin_can_create_block(self):
+        self.client.force_login(self.admin_user)
+
+        response = self.client.post(
+           reverse("rooms:block-create"),
+        {
+            "name": "New Test Block",
+            "number_of_floors": 3,
+        },
+    )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+        Block.objects.filter(name="New Test Block").count(),
+        1,
+    )
+
+
+def test_admin_cannot_create_block_with_zero_floors(self):
+    self.client.force_login(self.admin_user)
+
+    response = self.client.post(
+        reverse("rooms:block-create"),
+        {
+            "name": "Invalid Block",
+            "number_of_floors": 0,
+        },
+    )
+
+    self.assertEqual(response.status_code, 200)
+
+    self.assertFalse(
+        Block.objects.filter(name="Invalid Block").exists()
+    )
+
+    self.assertIn(
+        "number_of_floors",
+        response.context["form"].errors,
+    )
 
 class RoomAdminDeletionTests(TestCase):
     def setUp(self):

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Admin dashboard | HMS{% endblock %}
+
+{% block page_content %}
+<main class="dashboard-page">
+  <section class="dashboard-heading" aria-labelledby="dashboard-title">
+    <p class="eyebrow">Hostel overview</p>
+    <h1 id="dashboard-title">Admin dashboard</h1>
+    <p>Live hostel information for {{ request.user.get_full_name|default:request.user.srn }}.</p>
+  </section>
+
+  <section class="dashboard-grid" aria-label="Hostel summary">
+    <article class="dashboard-card">
+      <h2>Room occupancy</h2>
+      <p class="dashboard-metric">{{ occupied_rooms }} <span>of {{ total_rooms }} rooms</span></p>
+      <p>{{ occupancy_percentage }}% of beds occupied</p>
+    </article>
+
+    <article class="dashboard-card">
+      <h2>Outstanding fees</h2>
+      <p class="dashboard-metric">{{ students_with_dues }} <span>students with dues</span></p>
+      <p>₹{{ total_amount_owed|floatformat:2 }} outstanding</p>
+      <a href="{% url 'fees:fee-list' %}">Manage fees</a>
+    </article>
+
+    <article class="dashboard-card">
+      <h2>Active complaints</h2>
+      <p class="dashboard-metric">{{ active_complaints }}</p>
+      <p>Open or In Progress</p>
+      <a href="{% url 'complaints:complaint-list' %}">Manage complaints</a>
+    </article>
+
+    <article class="dashboard-card dashboard-card--muted">
+      <h2>Pending room applications</h2>
+      <p class="dashboard-metric">—</p>
+      <p>Available when room allocation is implemented.</p>
+    </article>
+  </section>
+</main>
+{% endblock %}
