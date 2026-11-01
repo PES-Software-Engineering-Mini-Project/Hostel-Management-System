@@ -1,5 +1,9 @@
-﻿
-from django.test import TestCase
+﻿from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
+
+from django.contrib.messages import get_messages
+from django.db import close_old_connections, connection
+from django.test import Client, TestCase, TransactionTestCase, skipUnlessDBFeature
 from django.urls import reverse
 
 from accounts.models import User
@@ -117,6 +121,91 @@ class RoomAllocationTests(RoomApplicationTests):
             RoomApplication.Status.ALLOTTED,
         )
 
+
+    def test_admin_can_reject_pending_application(self):
+        application = self.create_application()
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse("rooms:reject-application", args=[application.pk])
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("rooms:pending-applications"),
+        )
+
+        application.refresh_from_db()
+
+        self.assertEqual(
+            application.status,
+            RoomApplication.Status.REJECTED,
+        )
+
+        self.assertFalse(
+            RoomAllocation.objects.filter(
+                student=self.student
+            ).exists()
+        )
+
+        self.room.refresh_from_db()
+        self.assertEqual(self.room.occupied_count, 0)
+
+    def test_student_cannot_reject_application(self):
+        application = self.create_application()
+        self.client.force_login(self.student)
+
+        response = self.client.post(
+            reverse("rooms:reject-application", args=[application.pk])
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+        application.refresh_from_db()
+        self.assertEqual(
+            application.status,
+            RoomApplication.Status.PENDING,
+        )
+
+    def test_get_request_cannot_reject_application(self):
+        application = self.create_application()
+        self.client.force_login(self.admin)
+
+        response = self.client.get(
+            reverse("rooms:reject-application", args=[application.pk])
+        )
+
+        self.assertEqual(response.status_code, 405)
+
+        application.refresh_from_db()
+        self.assertEqual(
+            application.status,
+            RoomApplication.Status.PENDING,
+        )
+
+    def test_already_processed_application_cannot_be_rejected(self):
+        application = self.create_application()
+        application.status = RoomApplication.Status.ALLOTTED
+        application.save(update_fields=["status"])
+
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse("rooms:reject-application", args=[application.pk])
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("rooms:pending-applications"),
+        )
+
+        application.refresh_from_db()
+
+        self.assertEqual(
+            application.status,
+            RoomApplication.Status.ALLOTTED,
+        )
+
     def test_full_room_cannot_be_allotted(self):
         self.room.occupied_count = self.room.capacity
         self.room.save()
@@ -193,6 +282,7 @@ class RoomAllocationTests(RoomApplicationTests):
         )
         self.room.refresh_from_db()
         self.assertEqual(self.room.occupied_count, 0)
+
     def test_admin_can_move_student_to_another_room(self):
         allocation = RoomAllocation.objects.create(
             student=self.student,
@@ -256,3 +346,136 @@ class RoomAllocationTests(RoomApplicationTests):
         )
 
         self.assertEqual(response.status_code, 403)
+
+
+# SQLite has no row locks and fails concurrent writes with "table is locked", so this
+# runs on PostgreSQL only (the CI PostgreSQL step).
+@skipUnlessDBFeature("has_select_for_update")
+class ConcurrentRoomAllocationTests(TransactionTestCase):
+    reset_sequences = True
+
+    def setUp(self):
+        self.admin = User.objects.create_user(
+            srn="PES2UG24CS599",
+            email="admin599@example.com",
+            password="TestPassword123!",
+            role=User.Role.ADMIN,
+            is_staff=True,
+        )
+
+        self.block = Block.objects.create(
+            name="Concurrency Block",
+            number_of_floors=2,
+        )
+
+        self.room = Room.objects.create(
+            block=self.block,
+            room_number="301",
+            floor=1,
+            room_type=Room.RoomType.SINGLE,
+            capacity=1,
+            monthly_fee=1000,
+            occupied_count=0,
+        )
+
+        self.students = [
+            User.objects.create_user(
+                srn=f"PES2UG24CS60{i}",
+                email=f"student60{i}@example.com",
+                password="TestPassword123!",
+                role=User.Role.STUDENT,
+            )
+            for i in range(1, 3)
+        ]
+
+        self.applications = [
+            RoomApplication.objects.create(student=student)
+            for student in self.students
+        ]
+
+    def attempt_allotment(self, application_id, barrier):
+        close_old_connections()
+
+        try:
+            client = Client()
+            client.force_login(
+                User.objects.get(pk=self.admin.pk)
+            )
+
+            barrier.wait(timeout=10)
+
+            response = client.post(
+                reverse(
+                    "rooms:allot-room",
+                    args=[application_id],
+                ),
+                {"room_id": self.room.pk},
+            )
+
+            response_messages = [
+            str(message)
+            for message in get_messages(response.wsgi_request)
+        ]
+
+            return response.status_code , response_messages
+
+        finally:
+            connection.close()
+
+    def test_two_students_cannot_be_allotted_to_last_bed(self):
+        barrier = Barrier(2)
+
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            futures = [
+                executor.submit(
+                    self.attempt_allotment,
+                    application.pk,
+                    barrier,
+                )
+                for application in self.applications
+            ]
+
+            results = [
+                future.result(timeout=30)
+                for future in futures
+            ]
+
+        for status_code, _ in results:
+            self.assertEqual(status_code, 302)
+
+        all_messages = [
+            message
+            for _, messages in results
+            for message in messages
+        ]
+
+        self.assertEqual(
+            all_messages.count("Room allotted successfully."),
+            1,
+        )
+
+        self.assertEqual(
+            all_messages.count("Room is full."),
+            1,
+        )
+
+        self.room.refresh_from_db()
+
+        self.assertEqual(
+            RoomAllocation.objects.filter(room=self.room).count(),
+            1,
+        )
+
+        self.assertEqual(self.room.occupied_count, 1)
+
+        allotted_count = RoomApplication.objects.filter(
+            status=RoomApplication.Status.ALLOTTED
+        ).count()
+
+        self.assertEqual(allotted_count, 1)
+
+        pending_count = RoomApplication.objects.filter(
+            status=RoomApplication.Status.PENDING
+        ).count()
+
+        self.assertEqual(pending_count, 1)

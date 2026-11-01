@@ -4,23 +4,19 @@
 {% block title %}Add Block | HMS{% endblock %}
 
 {% block page_content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Add Block</title>
-</head>
-<body>
-    <h1>Add Block</h1>
+<main class="area-page">
+    <section class="area-card">
+        <h1>Add Block</h1>
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Save Block</button>
-    </form>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Save Block</button>
+        </form>
 
-    <p>
-        <a href="{% url 'rooms:room-list' %}">Back to Rooms</a>
-    </p>
-</html>
+        <p>
+            <a href="{% url 'rooms:room-list' %}">Back to Rooms</a>
+        </p>
+    </section>
+</main>
 {% endblock %}

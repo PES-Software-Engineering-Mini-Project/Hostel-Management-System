@@ -200,6 +200,31 @@ def allocation_list(request):
         },
     )
 
+
+
+@admin_required
+@require_POST
+def reject_application(request, application_id):
+    with transaction.atomic():
+        application = get_object_or_404(
+            RoomApplication.objects.select_for_update(),
+            pk=application_id,
+        )
+
+        if application.status != RoomApplication.Status.PENDING:
+            messages.error(
+                request,
+                "Only pending applications can be rejected.",
+            )
+            return redirect("rooms:pending-applications")
+
+        application.status = RoomApplication.Status.REJECTED
+        application.save(update_fields=["status"])
+
+    messages.success(request, "Room application rejected successfully.")
+    return redirect("rooms:pending-applications")
+
+
 @admin_required
 @require_POST
 def allot_room(request, application_id):
