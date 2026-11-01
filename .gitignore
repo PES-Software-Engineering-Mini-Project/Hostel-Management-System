@@ -18,3 +18,8 @@ media/
 htmlcov/
 .idea/
 .vscode/
+# Database backup artifacts
+/backups/
+*.dump
+*.backup
+*.bak
