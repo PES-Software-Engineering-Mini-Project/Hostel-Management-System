@@ -1,7 +1,7 @@
 
 from django import forms
 from .models import Block, Room, RoomApplication
-from .models import Block, Room
+
 
 
 class BlockForm(forms.ModelForm):

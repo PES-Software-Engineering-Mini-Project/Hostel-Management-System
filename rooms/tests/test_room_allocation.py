@@ -1,4 +1,4 @@
-from concurrent.futures import ThreadPoolExecutor
+﻿from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier
 
 from django.contrib.messages import get_messages
@@ -121,6 +121,91 @@ class RoomAllocationTests(RoomApplicationTests):
             RoomApplication.Status.ALLOTTED,
         )
 
+
+    def test_admin_can_reject_pending_application(self):
+        application = self.create_application()
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse("rooms:reject-application", args=[application.pk])
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("rooms:pending-applications"),
+        )
+
+        application.refresh_from_db()
+
+        self.assertEqual(
+            application.status,
+            RoomApplication.Status.REJECTED,
+        )
+
+        self.assertFalse(
+            RoomAllocation.objects.filter(
+                student=self.student
+            ).exists()
+        )
+
+        self.room.refresh_from_db()
+        self.assertEqual(self.room.occupied_count, 0)
+
+    def test_student_cannot_reject_application(self):
+        application = self.create_application()
+        self.client.force_login(self.student)
+
+        response = self.client.post(
+            reverse("rooms:reject-application", args=[application.pk])
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+        application.refresh_from_db()
+        self.assertEqual(
+            application.status,
+            RoomApplication.Status.PENDING,
+        )
+
+    def test_get_request_cannot_reject_application(self):
+        application = self.create_application()
+        self.client.force_login(self.admin)
+
+        response = self.client.get(
+            reverse("rooms:reject-application", args=[application.pk])
+        )
+
+        self.assertEqual(response.status_code, 405)
+
+        application.refresh_from_db()
+        self.assertEqual(
+            application.status,
+            RoomApplication.Status.PENDING,
+        )
+
+    def test_already_processed_application_cannot_be_rejected(self):
+        application = self.create_application()
+        application.status = RoomApplication.Status.ALLOTTED
+        application.save(update_fields=["status"])
+
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse("rooms:reject-application", args=[application.pk])
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("rooms:pending-applications"),
+        )
+
+        application.refresh_from_db()
+
+        self.assertEqual(
+            application.status,
+            RoomApplication.Status.ALLOTTED,
+        )
+
     def test_full_room_cannot_be_allotted(self):
         self.room.occupied_count = self.room.capacity
         self.room.save()
@@ -197,6 +282,7 @@ class RoomAllocationTests(RoomApplicationTests):
         )
         self.room.refresh_from_db()
         self.assertEqual(self.room.occupied_count, 0)
+
     def test_admin_can_move_student_to_another_room(self):
         allocation = RoomAllocation.objects.create(
             student=self.student,

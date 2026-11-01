@@ -17,6 +17,7 @@
 
         <form method="post" action="{% url 'rooms:allot-room' application.id %}">
           {% csrf_token %}
+
           <label for="room-{{ application.id }}">Select room</label>
           <select id="room-{{ application.id }}" name="room_id" required>
             <option value="">Choose a room</option>
@@ -27,7 +28,13 @@
               </option>
             {% endfor %}
           </select>
+
           <button type="submit">Allot Room</button>
+        </form>
+
+        <form method="post" action="{% url 'rooms:reject-application' application.id %}">
+          {% csrf_token %}
+          <button type="submit">Reject Application</button>
         </form>
       </article>
       <hr>
