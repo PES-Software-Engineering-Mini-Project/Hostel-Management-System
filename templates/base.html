@@ -14,6 +14,9 @@
         <nav class="site-nav" aria-label="Main">
           {% if user.role == "admin" %}
             <a href="{% url 'admin-dashboard' %}">Dashboard</a>
+            <a href="{% url 'rooms:room-list' %}">Rooms</a>
+            <a href="{% url 'rooms:pending-applications' %}">Applications</a>
+            <a href="{% url 'rooms:allocation-list' %}">Allocations</a>
             <a href="{% url 'fees:fee-list' %}">Fees</a>
             <a href="{% url 'complaints:complaint-list' %}">Complaints</a>
             <a href="{% url 'student-list' %}">Students</a>
