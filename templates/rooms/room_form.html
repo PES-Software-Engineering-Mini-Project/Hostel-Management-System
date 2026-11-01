@@ -1,19 +1,22 @@
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Add Room</title>
-</head>
-<body>
-    <h1>Add Room</h1>
+{% extends "base.html" %}
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Save Room</button>
-    </form>
+{% block title %}Add Room | HMS{% endblock %}
 
-    <p><a href="{% url 'rooms:room-list' %}">Back to Rooms</a></p>
-</body>
-</html>
+{% block page_content %}
+<main class="area-page">
+    <section class="area-card">
+        <h1>Add Room</h1>
+
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Save Room</button>
+        </form>
+
+        <p>
+            <a href="{% url 'rooms:room-list' %}">Back to Rooms</a>
+        </p>
+    </section>
+</main>
+{% endblock %}
