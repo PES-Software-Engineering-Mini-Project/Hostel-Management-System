@@ -1,17 +1,19 @@
-"""Unit tests for fee records, payments and fee forms (FR-5.1 to FR-5.3)."""
+"""Unit tests for fee records, payments, receipts and fee forms (FR-5.1 to FR-5.5)."""
 
 from datetime import timedelta
 from decimal import Decimal
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from fees.forms import FeeRecordForm, PaymentForm
 from fees.models import FeeRecord, Payment
+from rooms.models import Room
 
-from .helpers import make_admin, make_fee_record, make_user
+from .helpers import allot_room, make_admin, make_fee_record, make_user
 
 
 class FeeRecordModelTests(TestCase):
@@ -194,24 +196,64 @@ class RecordPaymentTests(TestCase):
         self.assertFalse(Payment.objects.exists())
 
 
+@override_settings(HMS_MONTHS_PER_TERM=6)
 class FeeRecordFormTests(TestCase):
     def setUp(self):
         self.student = make_user("PES1UG23CS301")
+        self.room = allot_room(self.student, monthly_fee="7500.00")
 
     def test_valid_form_normalises_term_whitespace(self):
-        form = FeeRecordForm(
-            data={"student": self.student.pk, "term": "  2026-27   Odd ", "amount_due": "45000"}
-        )
+        form = FeeRecordForm(data={"student": self.student.pk, "term": "  2026-27   Odd "})
 
         self.assertTrue(form.is_valid(), form.errors)
         self.assertEqual(form.cleaned_data["term"], "2026-27 Odd")
 
+    def test_fee_due_is_derived_from_the_allotted_room(self):
+        form = FeeRecordForm(data={"student": self.student.pk, "term": "2026-27 Odd"})
+
+        self.assertTrue(form.is_valid(), form.errors)
+        record = form.save()
+        self.assertEqual(record.room, self.room)
+        self.assertEqual(record.amount_due, Decimal("7500.00") * settings.HMS_MONTHS_PER_TERM)
+
+    @override_settings(HMS_MONTHS_PER_TERM=5)
+    def test_months_per_term_is_configurable(self):
+        form = FeeRecordForm(data={"student": self.student.pk, "term": "2026-27 Odd"})
+
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(form.save().amount_due, Decimal("37500.00"))
+
+    def test_typed_amount_due_is_ignored(self):
+        form = FeeRecordForm(
+            data={"student": self.student.pk, "term": "2026-27 Odd", "amount_due": "1.00"}
+        )
+
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertNotIn("amount_due", form.fields)
+        self.assertEqual(form.save().amount_due, Decimal("45000.00"))
+
+    def test_student_without_a_room_cannot_be_billed(self):
+        unallotted = make_user("PES1UG23CS302")
+
+        form = FeeRecordForm(data={"student": unallotted.pk, "term": "2026-27 Odd"})
+
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors["student"], ["Choose a student who has an allotted room."])
+        self.assertNotIn(unallotted, form.fields["student"].queryset)
+
+    def test_room_with_no_fee_is_a_form_error(self):
+        self.room.monthly_fee = Decimal("0.00")
+        self.room.save()
+
+        form = FeeRecordForm(data={"student": self.student.pk, "term": "2026-27 Odd"})
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("no monthly fee set", form.errors["student"][0])
+
     def test_duplicate_term_error_is_on_the_term_field(self):
         make_fee_record(self.student, term="2026-27 Odd")
 
-        form = FeeRecordForm(
-            data={"student": self.student.pk, "term": "2026-27 ODD", "amount_due": "45000"}
-        )
+        form = FeeRecordForm(data={"student": self.student.pk, "term": "2026-27 ODD"})
 
         self.assertFalse(form.is_valid())
         self.assertEqual(
@@ -226,6 +268,44 @@ class FeeRecordFormTests(TestCase):
 
         self.assertIn(self.student, form.fields["student"].queryset)
         self.assertNotIn(admin_user, form.fields["student"].queryset)
+
+
+@override_settings(HMS_MONTHS_PER_TERM=6)
+class RoomChangeMidTermTests(TestCase):
+    """FR-4.7 / FR-5.1: a move keeps the current term's bill; the next term uses the new room."""
+
+    def setUp(self):
+        self.student = make_user("PES1UG23CS303")
+        self.old_room = allot_room(self.student, room_number="101", monthly_fee="5000.00")
+        self.record = FeeRecordForm(
+            data={"student": self.student.pk, "term": "2026-27 Odd"}
+        ).save()
+        self.new_room = Room.objects.create(
+            block=self.old_room.block,
+            room_number="102",
+            floor=1,
+            room_type=Room.RoomType.SINGLE,
+            capacity=1,
+            monthly_fee=Decimal("8000.00"),
+        )
+        allocation = self.student.room_allocation
+        allocation.room = self.new_room
+        allocation.save()
+        self.student.refresh_from_db()
+
+    def test_existing_term_record_keeps_the_original_room_and_amount(self):
+        self.record.refresh_from_db()
+
+        self.assertEqual(self.record.room, self.old_room)
+        self.assertEqual(self.record.amount_due, Decimal("30000.00"))
+
+    def test_next_term_record_uses_the_new_room(self):
+        form = FeeRecordForm(data={"student": self.student.pk, "term": "2026-27 Even"})
+
+        self.assertTrue(form.is_valid(), form.errors)
+        record = form.save()
+        self.assertEqual(record.room, self.new_room)
+        self.assertEqual(record.amount_due, Decimal("48000.00"))
 
 
 class PaymentFormTests(TestCase):
@@ -264,3 +344,30 @@ class PaymentFormTests(TestCase):
 
         self.assertFalse(form.is_valid())
         self.assertIn("Only an Admin can record a payment.", form.non_field_errors())
+
+
+class ReceiptModelTests(TestCase):
+    def setUp(self):
+        self.admin_user = make_admin()
+        self.record = make_fee_record(make_user("PES1UG23CS601"), amount_due="10000.00")
+
+    def test_receipt_number_is_ten_digits(self):
+        payment = self.record.record_payment(
+            amount=Decimal("100.00"), paid_on=timezone.localdate(), recorded_by=self.admin_user
+        )
+
+        self.assertEqual(len(payment.receipt_number), 10)
+        self.assertTrue(payment.receipt_number.isdigit())
+        self.assertEqual(int(payment.receipt_number), payment.pk)
+
+    def test_balance_after_counts_only_payments_up_to_that_one(self):
+        today = timezone.localdate()
+        first = self.record.record_payment(
+            amount=Decimal("3000.00"), paid_on=today, recorded_by=self.admin_user
+        )
+        second = self.record.record_payment(
+            amount=Decimal("2500.00"), paid_on=today, recorded_by=self.admin_user
+        )
+
+        self.assertEqual(first.balance_after, Decimal("7000.00"))
+        self.assertEqual(second.balance_after, Decimal("4500.00"))

@@ -27,8 +27,9 @@ class FeeRecordQuerySet(models.QuerySet):
 class FeeRecord(models.Model):
     """The hostel fee one student owes for one term (FR-5.1).
 
-    The amount due is entered by an Admin for now. Deriving it from the student's allotted
-    room fee (SRS FR-5.1) needs room allocation, which arrives with SCRUM-9 in Sprint 2.
+    The amount due comes from the student's allotted room when the record is created and is
+    then fixed for that term: moving rooms or changing a room's fee later does not rewrite a
+    bill that may already be part-paid. The next term's record uses the new room.
     """
 
     student = models.ForeignKey(
@@ -36,6 +37,14 @@ class FeeRecord(models.Model):
         on_delete=models.PROTECT,
         related_name="fee_records",
         limit_choices_to={"role": "student"},
+    )
+    room = models.ForeignKey(
+        "rooms.Room",
+        on_delete=models.PROTECT,
+        related_name="fee_records",
+        null=True,
+        blank=True,
+        help_text="The room the fee was calculated from. Empty for records made before allocation.",
     )
     term = models.CharField(max_length=30, help_text="For example, 2026-27 Odd Semester.")
     amount_due = models.DecimalField(
@@ -58,6 +67,10 @@ class FeeRecord(models.Model):
 
     def __str__(self):
         return f"{self.student.srn} - {self.term}"
+
+    @staticmethod
+    def term_fee_for(room):
+        return room.monthly_fee * settings.HMS_MONTHS_PER_TERM
 
     @property
     def amount_paid(self):
@@ -109,6 +122,26 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"{self.fee_record} - {self.amount}"
+
+    @property
+    def receipt_number(self):
+        """The 10-digit numeric receipt number from the SRS data dictionary."""
+        return f"{self.pk:010d}"
+
+    @property
+    def balance_after(self):
+        """Balance left on the fee record right after this payment (FR-5.5).
+
+        Payments are numbered in the order they are recorded, so the earlier ones are those
+        with a lower primary key.
+        """
+        paid_so_far = (
+            self.fee_record.payments.filter(pk__lte=self.pk).aggregate(total=Sum("amount"))[
+                "total"
+            ]
+            or ZERO
+        )
+        return self.fee_record.amount_due - paid_so_far
 
     def clean(self):
         # fee_record and recorded_by are set by the view, not typed into the payment form, so

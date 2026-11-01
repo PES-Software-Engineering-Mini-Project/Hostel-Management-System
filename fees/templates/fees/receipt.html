@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Receipt {{ payment.receipt_number }} | HMS{% endblock %}
+
+{% block page_content %}
+<link rel="stylesheet" href="{% static 'fees/css/fees.css' %}">
+<main class="fee-page fee-page-narrow">
+  {% if request.user.role == "admin" %}
+    <a class="fee-back" href="{% url 'fees:fee-list' %}">&larr; Back to fee management</a>
+  {% else %}
+    <a class="fee-back" href="{% url 'fees:my-fees' %}">&larr; Back to my fees</a>
+  {% endif %}
+  {% include "fees/_messages.html" %}
+  <section class="area-card receipt">
+    {% include "fees/_receipt_body.html" %}
+    <div class="receipt-actions">
+      <button class="fee-button" type="button" onclick="window.print()">Print</button>
+      <a class="fee-button fee-button-secondary" href="{% url 'fees:receipt-download' payment.pk %}">Download</a>
+    </div>
+  </section>
+</main>
+{% endblock %}

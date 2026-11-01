@@ -4,13 +4,13 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.shortcuts import resolve_url
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
 from fees.models import FeeRecord, Payment
 
-from .helpers import make_admin, make_fee_record, make_user
+from .helpers import allot_room, make_admin, make_fee_record, make_user
 
 
 class FeeViewTestCase(TestCase):
@@ -45,30 +45,47 @@ class AdminFeeManagementTests(FeeViewTestCase):
         self.assertContains(response, "PES1UG23CS502")
         self.assertContains(response, "7500.00")
 
-    def test_admin_creates_fee_record(self):
+    @override_settings(HMS_MONTHS_PER_TERM=6)
+    def test_admin_creates_fee_record_from_the_allotted_room(self):
+        room = allot_room(self.student, monthly_fee="9000.00")
+
         response = self.client.post(
             reverse("fees:fee-create"),
-            {"student": self.student.pk, "term": "2027-28 Odd", "amount_due": "55000.00"},
+            {"student": self.student.pk, "term": "2027-28 Odd", "amount_due": "1.00"},
             follow=True,
         )
 
         self.assertRedirects(response, reverse("fees:fee-list"))
-        self.assertTrue(
-            FeeRecord.objects.filter(
-                student=self.student, term="2027-28 Odd", amount_due=Decimal("55000.00")
-            ).exists()
-        )
+        record = FeeRecord.objects.get(student=self.student, term="2027-28 Odd")
+        self.assertEqual(record.amount_due, Decimal("54000.00"))
+        self.assertEqual(record.room, room)
         self.assertContains(response, "Fee record added for PES1UG23CS501")
+        self.assertContains(response, "A Block 101")
+
+    def test_fee_form_has_no_amount_field(self):
+        response = self.client.get(reverse("fees:fee-create"))
+
+        self.assertNotContains(response, 'name="amount_due"')
+
+    def test_student_without_room_cannot_be_billed(self):
+        response = self.client.post(
+            reverse("fees:fee-create"), {"student": self.student.pk, "term": "2027-28 Odd"}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Choose a student who has an allotted room.")
+        self.assertFalse(FeeRecord.objects.filter(term="2027-28 Odd").exists())
 
     def test_duplicate_fee_record_keeps_typed_values_and_shows_field_error(self):
+        allot_room(self.student)
+
         response = self.client.post(
-            reverse("fees:fee-create"),
-            {"student": self.student.pk, "term": "2026-27 Odd", "amount_due": "999.00"},
+            reverse("fees:fee-create"), {"student": self.student.pk, "term": "2026-27 Odd"}
         )
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "This student already has a fee record for this term.")
-        self.assertContains(response, 'value="999.00"')
+        self.assertContains(response, 'value="2026-27 Odd"')
         self.assertEqual(FeeRecord.objects.filter(student=self.student).count(), 1)
 
     def test_admin_records_payment_and_balance_updates(self):
@@ -76,8 +93,8 @@ class AdminFeeManagementTests(FeeViewTestCase):
             self.payment_url(self.record), {"amount": "4000.00", "paid_on": self.today}, follow=True
         )
 
-        self.assertRedirects(response, reverse("fees:fee-list"))
         payment = Payment.objects.get(fee_record=self.record)
+        self.assertRedirects(response, reverse("fees:receipt", args=[payment.pk]))
         self.assertEqual(payment.amount, Decimal("4000.00"))
         self.assertEqual(payment.recorded_by, self.admin_user)
         self.assertEqual(self.record.balance, Decimal("6000.00"))
@@ -190,3 +207,86 @@ class DashboardLinkTests(FeeViewTestCase):
         response = self.client.get(reverse("admin-dashboard"))
 
         self.assertContains(response, reverse("fees:fee-list"))
+
+
+class ReceiptTests(FeeViewTestCase):
+    """FR-5.5 and FR-5.6: one receipt per payment; students see only their own (NFR-3)."""
+
+    def setUp(self):
+        super().setUp()
+        self.room = allot_room(self.student, room_number="204")
+        self.record.room = self.room
+        self.record.save()
+        self.payment = self.record.record_payment(
+            amount=Decimal("2500.00"), paid_on=timezone.localdate(), recorded_by=self.admin_user
+        )
+        self.other_payment = self.other_record.record_payment(
+            amount=Decimal("100.00"), paid_on=timezone.localdate(), recorded_by=self.admin_user
+        )
+
+    def receipt_url(self, payment, download=False):
+        name = "fees:receipt-download" if download else "fees:receipt"
+        return reverse(name, args=[payment.pk])
+
+    def test_receipt_shows_every_field_from_the_srs(self):
+        self.client.force_login(self.student)
+
+        response = self.client.get(self.receipt_url(self.payment))
+
+        self.assertEqual(response.status_code, 200)
+        for text in (
+            self.payment.receipt_number,
+            "Asha",
+            "PES1UG23CS501",
+            "A Block, room 204",
+            "2500.00",
+            "7500.00",
+            timezone.localdate().strftime("%Y"),
+        ):
+            self.assertContains(response, text)
+
+    def test_student_can_download_their_own_receipt(self):
+        self.client.force_login(self.student)
+
+        response = self.client.get(self.receipt_url(self.payment, download=True))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("attachment;", response["Content-Disposition"])
+        self.assertIn(self.payment.receipt_number, response["Content-Disposition"])
+        self.assertContains(response, "PES1UG23CS501")
+
+    def test_student_cannot_open_another_students_receipt(self):
+        self.client.force_login(self.student)
+
+        for download in (False, True):
+            with self.subTest(download=download):
+                response = self.client.get(self.receipt_url(self.other_payment, download))
+                self.assertEqual(response.status_code, 404)
+
+    def test_admin_can_open_any_receipt(self):
+        self.client.force_login(self.admin_user)
+
+        for payment in (self.payment, self.other_payment):
+            with self.subTest(payment=payment.pk):
+                self.assertEqual(self.client.get(self.receipt_url(payment)).status_code, 200)
+                self.assertEqual(
+                    self.client.get(self.receipt_url(payment, download=True)).status_code, 200
+                )
+
+    def test_logged_out_user_is_sent_to_login(self):
+        url = self.receipt_url(self.payment)
+
+        response = self.client.get(url)
+
+        self.assertRedirects(
+            response, f"{resolve_url(settings.LOGIN_URL)}?next={url}", fetch_redirect_response=False
+        )
+
+    def test_receipt_links_from_my_fees_and_payment_history(self):
+        self.client.force_login(self.student)
+        self.assertContains(self.client.get(reverse("fees:my-fees")), self.receipt_url(self.payment))
+
+        self.client.force_login(self.admin_user)
+        self.assertContains(
+            self.client.get(self.payment_url(self.record)), self.receipt_url(self.payment)
+        )
