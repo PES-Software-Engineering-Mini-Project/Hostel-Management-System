@@ -123,3 +123,15 @@ input:focus { border-color: var(--teal-500); }
   .site-header { flex-wrap: wrap; row-gap: .5rem; }
   .site-nav { margin-left: 0; order: 3; width: 100%; }
 }
+
+/* Search and filter bar shared by list pages (FR-9) */
+.filter-bar { align-items: flex-end; background: var(--surface); border: 1px solid var(--neutral-200); border-radius: .85rem; display: flex; flex-wrap: wrap; gap: .75rem 1rem; margin: 0 0 1.25rem; padding: 1rem; }
+.filter-field { display: grid; flex: 1 1 10rem; gap: .35rem; }
+.filter-field label { color: var(--neutral-500); font-size: .85rem; font-weight: 700; }
+.filter-field select, .filter-field input { background: var(--surface); border: 1px solid var(--neutral-200); border-radius: .65rem; color: var(--neutral-900); font: inherit; padding: .65rem .75rem; width: 100%; }
+.filter-field .field-error { margin: 0; }
+.filter-actions { align-items: center; display: flex; gap: .85rem; }
+.filter-submit { background: var(--blue-600); border: 0; border-radius: .65rem; color: #fff; cursor: pointer; font: inherit; font-weight: 800; padding: .7rem 1.1rem; }
+.filter-submit:hover { background: var(--navy-800); }
+.filter-clear { color: var(--blue-600); font-weight: 700; }
+.no-results { color: var(--neutral-500); }

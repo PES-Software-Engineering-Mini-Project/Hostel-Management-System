@@ -1,0 +1,14 @@
+{% comment %}GET search/filter bar shared by list pages (FR-9). Pass the filter form as `form`.{% endcomment %}
+<form class="filter-bar" method="get" role="search">
+  {% for field in form %}
+    <div class="filter-field">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </div>
+  {% endfor %}
+  <div class="filter-actions">
+    <button class="filter-submit" type="submit">{{ submit_label|default:"Apply filters" }}</button>
+    {% if form.is_filtering %}<a class="filter-clear" href="{{ request.path }}">Clear</a>{% endif %}
+  </div>
+</form>

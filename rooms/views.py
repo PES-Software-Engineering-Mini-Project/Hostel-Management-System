@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from accounts.decorators import admin_required, student_required
-from .forms import BlockForm, RoomApplicationForm, RoomForm
+from .forms import BlockForm, RoomApplicationForm, RoomFilterForm, RoomForm
 from .models import (
     Block,
     Room,
@@ -17,13 +17,14 @@ from .models import (
 
 @admin_required
 def room_list(request):
-    rooms = Room.objects.select_related("block").all()
+    filter_form = RoomFilterForm(request.GET)
+    rooms = filter_form.filter(Room.objects.select_related("block"))
     blocks = Block.objects.all()
 
     return render(
         request,
         "rooms/room_list.html",
-        {"rooms": rooms, "blocks": blocks},
+        {"rooms": rooms, "blocks": blocks, "filter_form": filter_form},
     )
 
 
