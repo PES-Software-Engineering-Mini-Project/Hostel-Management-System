@@ -15,6 +15,7 @@
       <h2>Room occupancy</h2>
       <p class="dashboard-metric">{{ occupied_rooms }} <span>of {{ total_rooms }} rooms</span></p>
       <p>{{ occupancy_percentage }}% of beds occupied</p>
+      <a href="{% url 'rooms:room-list' %}">Manage rooms</a>
     </article>
 
     <article class="dashboard-card">
@@ -31,10 +32,11 @@
       <a href="{% url 'complaints:complaint-list' %}">Manage complaints</a>
     </article>
 
-    <article class="dashboard-card dashboard-card--muted">
+    <article class="dashboard-card">
       <h2>Pending room applications</h2>
-      <p class="dashboard-metric">—</p>
-      <p>Available when room allocation is implemented.</p>
+      <p class="dashboard-metric">{{ pending_applications }}</p>
+      <p>Waiting for a room</p>
+      <a href="{% url 'rooms:pending-applications' %}">Review applications</a>
     </article>
   </section>
 </main>

@@ -60,7 +60,6 @@ class Command(BaseCommand):
                     Room.RoomType.SINGLE: 1,
                     Room.RoomType.DOUBLE: 2,
                     Room.RoomType.TRIPLE: 3,
-                    Room.RoomType.DORMITORY: 6,
                 }[room_type]
                 rooms.append(
                     Room(

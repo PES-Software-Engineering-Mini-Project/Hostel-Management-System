@@ -10,7 +10,7 @@ from django.views.decorators.http import require_POST
 
 from complaints.models import Complaint
 from fees.models import FeeRecord
-from rooms.models import Room
+from rooms.models import Room, RoomApplication
 
 from .decorators import admin_required, student_required
 from .forms import (
@@ -56,8 +56,6 @@ def register(request):
 
 @student_required
 def student_dashboard(request):
-    from rooms.models import RoomApplication
-
     allocation = getattr(request.user, "room_allocation", None)
     pending_application = RoomApplication.objects.filter(
         student=request.user,
@@ -96,6 +94,9 @@ def admin_dashboard(request):
     active_complaints = Complaint.objects.filter(
         status__in=[Complaint.Status.OPEN, Complaint.Status.IN_PROGRESS]
     ).count()
+    pending_applications = RoomApplication.objects.filter(
+        status=RoomApplication.Status.PENDING
+    ).count()
 
     context = {
         "total_rooms": room_totals["total_rooms"],
@@ -104,6 +105,7 @@ def admin_dashboard(request):
         "students_with_dues": len(students_with_dues),
         "total_amount_owed": total_amount_owed,
         "active_complaints": active_complaints,
+        "pending_applications": pending_applications,
     }
     return render(request, "accounts/admin_dashboard.html", context)
 

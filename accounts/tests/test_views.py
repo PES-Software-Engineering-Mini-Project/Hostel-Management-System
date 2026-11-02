@@ -6,7 +6,7 @@ from django.urls import reverse
 
 from complaints.models import Complaint
 from fees.models import FeeRecord
-from rooms.models import Block, Room
+from rooms.models import Block, Room, RoomApplication
 
 class AuthenticationFlowTests(TestCase):
     def setUp(self):
@@ -107,6 +107,10 @@ class AuthenticationFlowTests(TestCase):
             student=second_student, category=Complaint.Category.CLEANING,
             description="Resolved complaint.", status=Complaint.Status.RESOLVED,
         )
+        RoomApplication.objects.create(student=self.student)
+        RoomApplication.objects.create(
+            student=second_student, status=RoomApplication.Status.ALLOTTED
+        )
         self.client.force_login(self.admin_user)
 
         response = self.client.get(reverse("admin-dashboard"))
@@ -121,7 +125,8 @@ class AuthenticationFlowTests(TestCase):
         self.assertContains(response, "66.7% of beds occupied")
         self.assertContains(response, "₹80.00 outstanding")
         self.assertContains(response, "Open or In Progress")
-        self.assertContains(response, "Available when room allocation is implemented.")
+        self.assertEqual(response.context["pending_applications"], 1)
+        self.assertContains(response, reverse("rooms:pending-applications"))
 
     def test_logout_ends_the_session_and_protected_area_requires_login(self):
         self.client.force_login(self.student)
