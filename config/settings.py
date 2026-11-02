@@ -95,3 +95,6 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "accounts.User"
 LOGIN_URL = "login"
+
+# A term's fee due is the allotted room's monthly fee times this many months (SRS FR-5.1).
+HMS_MONTHS_PER_TERM = int(os.getenv("HMS_MONTHS_PER_TERM", "6"))

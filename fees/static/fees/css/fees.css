@@ -39,3 +39,19 @@
 }
 
 .visually-hidden { clip: rect(0 0 0 0); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px; }
+
+.fee-button-secondary { background: var(--surface); border: 1px solid var(--blue-600); color: var(--blue-600); }
+.fee-button-secondary:hover { background: var(--neutral-50); color: var(--navy-800); }
+button.fee-button { border: 0; cursor: pointer; font: inherit; font-weight: 800; }
+
+.receipt-header { align-items: flex-start; border-bottom: 2px solid var(--neutral-200); display: flex; gap: 1rem; justify-content: space-between; padding-bottom: 1rem; }
+.receipt-header h1 { margin: 0; }
+.receipt-eyebrow { color: var(--neutral-500); font-size: .8rem; letter-spacing: .06em; margin: 0 0 .3rem; text-transform: uppercase; }
+.receipt-number { margin: 0; text-align: right; }
+.receipt-actions { display: flex; flex-wrap: wrap; gap: .75rem; }
+
+@media print {
+  .site-header, .fee-back, .fee-messages, .receipt-actions { display: none; }
+  .fee-page { margin: 0; max-width: none; }
+  .receipt { border: 0; box-shadow: none; }
+}

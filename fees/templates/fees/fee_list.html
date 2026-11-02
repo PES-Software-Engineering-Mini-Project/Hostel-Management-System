@@ -19,6 +19,7 @@
           <tr>
             <th scope="col">SRN</th>
             <th scope="col">Student</th>
+            <th scope="col">Room</th>
             <th scope="col">Term</th>
             <th scope="col" class="num">Due (&#8377;)</th>
             <th scope="col" class="num">Paid (&#8377;)</th>
@@ -31,6 +32,7 @@
             <tr>
               <td>{{ record.student.srn }}</td>
               <td>{{ record.student.get_full_name }}</td>
+              <td>{% if record.room %}{{ record.room.block.name }} {{ record.room.room_number }}{% else %}&mdash;{% endif %}</td>
               <td>{{ record.term }}</td>
               <td class="num">{{ record.amount_due }}</td>
               <td class="num">{{ record.amount_paid }}</td>

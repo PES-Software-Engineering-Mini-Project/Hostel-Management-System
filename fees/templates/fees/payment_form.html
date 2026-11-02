@@ -11,6 +11,7 @@
     <h1>Record payment</h1>
     <dl class="fee-summary">
       <dt>Student</dt><dd>{{ fee_record.student.srn }} - {{ fee_record.student.get_full_name }}</dd>
+      <dt>Room</dt><dd>{% if fee_record.room %}{{ fee_record.room.block.name }} {{ fee_record.room.room_number }}{% else %}&mdash;{% endif %}</dd>
       <dt>Term</dt><dd>{{ fee_record.term }}</dd>
       <dt>Amount due</dt><dd>&#8377;{{ fee_record.amount_due }}</dd>
       <dt>Paid so far</dt><dd>&#8377;{{ fee_record.amount_paid }}</dd>
@@ -42,7 +43,7 @@
       <h2>Payment history</h2>
       <table class="fee-table">
         <thead>
-          <tr><th scope="col">Date</th><th scope="col" class="num">Amount (&#8377;)</th><th scope="col">Recorded by</th></tr>
+          <tr><th scope="col">Date</th><th scope="col" class="num">Amount (&#8377;)</th><th scope="col">Recorded by</th><th scope="col">Receipt</th></tr>
         </thead>
         <tbody>
           {% for payment in payments %}
@@ -50,6 +51,7 @@
               <td>{{ payment.paid_on }}</td>
               <td class="num">{{ payment.amount }}</td>
               <td>{{ payment.recorded_by.get_full_name|default:payment.recorded_by.srn }}</td>
+              <td><a href="{% url 'fees:receipt' payment.pk %}">{{ payment.receipt_number }}</a></td>
             </tr>
           {% endfor %}
         </tbody>
