@@ -18,6 +18,7 @@
       <table class="complaint-table">
         <thead>
           <tr>
+            <th scope="col">Room</th>
             <th scope="col">Category</th>
             <th scope="col">Description</th>
             <th scope="col">Raised</th>
@@ -28,6 +29,7 @@
         <tbody>
           {% for complaint in complaints %}
             <tr>
+              <td>{{ complaint.room|default:"—" }}</td>
               <td>{{ complaint.get_category_display }}</td>
               <td>{{ complaint.description|truncatechars:80 }}</td>
               <td class="when">{{ complaint.raised_at|date:"d M Y, H:i" }}</td>
