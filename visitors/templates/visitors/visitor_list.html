@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Visitor log | HMS{% endblock %}
+
+{% block page_content %}
+<link rel="stylesheet" href="{% static 'visitors/css/visitors.css' %}">
+<main class="visitor-page">
+  <div class="visitor-heading">
+    <h1>Visitor log</h1>
+  </div>
+  {% include "visitors/_messages.html" %}
+  {% include "_filter_bar.html" with form=filter_form %}
+
+  {% if visitors %}
+    <div class="visitor-table-wrap">
+      <table class="visitor-table">
+        <thead>
+          <tr>
+            <th scope="col">Visitor</th>
+            <th scope="col">Phone</th>
+            <th scope="col">Purpose</th>
+            <th scope="col">Host</th>
+            <th scope="col">Entered</th>
+            <th scope="col">Exited</th>
+            <th scope="col"><span class="visually-hidden">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for visitor in visitors %}
+            <tr>
+              <td>{{ visitor.name }}</td>
+              <td>{{ visitor.phone }}</td>
+              <td>{{ visitor.purpose }}</td>
+              <td>{{ visitor.host.srn }} {{ visitor.host.get_full_name }}</td>
+              <td class="when">{{ visitor.entered_at|date:"d M Y, H:i" }}</td>
+              <td class="when">{% if visitor.exited_at %}{{ visitor.exited_at|date:"d M Y, H:i" }}{% else %}<span class="visitor-badge visitor-badge-inside">Inside</span>{% endif %}</td>
+              <td>
+                {% if not visitor.exited_at %}
+                  <form class="visitor-inline-form" method="post" action="{% url 'visitors:check-out' visitor.pk %}">
+                    {% csrf_token %}
+                    <button class="visitor-button" type="submit">Check out</button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    {% if filter_form.is_filtering %}
+      <p class="visitor-empty no-results">No results found. Try a different search or status.</p>
+    {% else %}
+      <p class="visitor-empty">No visitors logged yet.</p>
+    {% endif %}
+  {% endif %}
+</main>
+{% endblock %}
