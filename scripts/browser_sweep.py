@@ -186,8 +186,8 @@ def login(page, base_url, srn):
         raise SystemExit(f"login failed for {srn}")
 
 
-def sweep(playwright, base_url, browser_names, widths):
-    anonymous, admin_pages, student_pages = page_lists()
+def sweep(playwright, base_url, browser_names, widths, page_sets):
+    anonymous, admin_pages, student_pages = page_sets
     results = []  # (browser, width, role, label, path, problems)
     for name in browser_names:
         browser = getattr(playwright, name).launch()
@@ -222,6 +222,7 @@ def main():
     from playwright.sync_api import sync_playwright
 
     prepare_data()
+    page_sets = page_lists()  # uses the ORM, which Playwright's event loop would refuse
     server = None
     base_url = args.base_url
     if not base_url:
@@ -230,7 +231,7 @@ def main():
         base_url = f"http://127.0.0.1:{port}"
     try:
         with sync_playwright() as playwright:
-            results = sweep(playwright, base_url, args.browsers, args.widths)
+            results = sweep(playwright, base_url, args.browsers, args.widths, page_sets)
     finally:
         if server:
             server.terminate()
