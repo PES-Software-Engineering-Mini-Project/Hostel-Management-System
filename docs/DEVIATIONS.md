@@ -33,6 +33,7 @@ _Last updated: 1 Nov 2026, end of Sprint 2 (rooms, allocation, dashboard, profil
 | D-14 | Complaints | Complaints are not yet tagged with the student's room | Planned | #49 (Sprint 3) |
 | D-15 | Rooms | Application and allocation routes differ from the SAD API design | Accepted | #15, PR #38 |
 | D-16 | Fees | Room fee changes and moves don't change an existing term's fee | Accepted | #14, PR #47 |
+| D-17 | Reports | The admin dashboard stays in `accounts`; only reports and CSV are in the new `reports` app | Accepted | #19 |
 
 ## Details
 
@@ -146,6 +147,13 @@ _Last updated: 1 Nov 2026, end of Sprint 2 (rooms, allocation, dashboard, profil
 - **Implemented (PR #47):** a fee record stores the room and amount when it is created and does not change afterwards. The next term's record uses the student's room at that time.
 - **Reason:** the bill may already be part-paid and receipts quote it, so changing it silently would make balances and receipts disagree.
 - **Impact:** tested in `fees/tests/test_models.py` (`RoomChangeMidTermTests`).
+
+### D-17 · The admin dashboard is not in the `reports` app
+
+- **SAD says:** §4.1: the `reports` app holds "the dashboard, reports and CSV code"; §3.8 maps FR-8.x (admin dashboard) to `reports`.
+- **Implemented (#19, Sprint 3):** a new `reports` app with the occupancy (by block and floor), fee-due (per student per term) and complaint (by category and status) reports at `/reports/`, each downloadable as CSV with Python's `csv` module. The admin dashboard (#18, Sprint 2) stays in `accounts` at `/dashboard/admin/`.
+- **Reason:** the dashboard was built and reviewed in Sprint 2 before the `reports` app existed. Moving it now would change a teammate's merged, tested code for no change in behaviour.
+- **Impact:** none on the requirements. Reports are Admin-only (students get 403), each runs a fixed number of queries, and cells that start with `=`, `+`, `-` or `@` are prefixed with `'` so a spreadsheet does not run them as formulas.
 
 ## How to update this log
 

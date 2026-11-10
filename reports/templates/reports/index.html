@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Reports | HMS{% endblock %}
+
+{% block page_content %}
+<link rel="stylesheet" href="{% static 'reports/css/reports.css' %}">
+<main class="report-page">
+  <h1>Reports</h1>
+  <p class="report-intro">View a report on screen or download it as a CSV file to share or archive.</p>
+  <section class="report-grid" aria-label="Available reports">
+    {% for report in reports %}
+      <article class="report-card">
+        <h2>{{ report.title }}</h2>
+        <p>{{ report.summary }}</p>
+        <div class="report-actions">
+          <a class="report-button" href="{% url 'reports:detail' report.slug %}">View</a>
+          <a class="report-link" href="{% url 'reports:csv' report.slug %}" download>Download CSV</a>
+        </div>
+      </article>
+    {% endfor %}
+  </section>
+</main>
+{% endblock %}

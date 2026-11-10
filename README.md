@@ -14,7 +14,7 @@ ORM, SQLite for local development, and PostgreSQL for deployment. It currently
 contains only the project infrastructure and the custom user-model foundation:
 
 - Django project configuration and a minimal base template/home route.
-- Separate `accounts`, `rooms`, `fees`, `complaints`, and `visitors` apps.
+- Separate `accounts`, `rooms`, `fees`, `complaints`, `visitors` and `reports` apps.
 - An SRN-based user model with unique SRN and email, contact details, optional branch
   and year of study, and `Student`/`Admin` roles.
 - Django's password hashing; plaintext passwords are never stored.

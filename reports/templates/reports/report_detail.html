@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load static reports_tags %}
+
+{% block title %}{{ report.title }} | HMS{% endblock %}
+
+{% block page_content %}
+<link rel="stylesheet" href="{% static 'reports/css/reports.css' %}">
+<main class="report-page">
+  <a class="report-back" href="{% url 'reports:index' %}">&larr; All reports</a>
+  <div class="report-heading">
+    <div>
+      <h1>{{ report.title }}</h1>
+      <p class="report-intro">{{ report.summary }} Generated {% now "j M Y, H:i" %}.</p>
+    </div>
+    {% if not data.is_empty %}
+      <a class="report-button" href="{% url 'reports:csv' report.slug %}" download>Download CSV</a>
+    {% endif %}
+  </div>
+
+  {% if data.is_empty %}
+    <p class="report-empty" role="status">{{ report.empty_message }}</p>
+  {% else %}
+    <div class="report-table-wrap">
+      <table class="report-table">
+        <thead>
+          <tr>
+            {% for header in data.headers %}
+              <th scope="col"{% if forloop.counter0 in report.numeric_columns %} class="num"{% endif %}>{{ header }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in data.rows %}
+            <tr>
+              {% for value in row %}
+                <td{% if forloop.counter0 in report.numeric_columns %} class="num"{% endif %}>{{ value|blank_dash }}</td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+        {% if data.totals %}
+          <tfoot>
+            <tr>
+              {% for value in data.totals %}
+                <td{% if forloop.counter0 in report.numeric_columns %} class="num"{% endif %}>{{ value }}</td>
+              {% endfor %}
+            </tr>
+          </tfoot>
+        {% endif %}
+      </table>
+    </div>
+  {% endif %}
+</main>
+{% endblock %}

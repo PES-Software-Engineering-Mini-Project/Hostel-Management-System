@@ -1,0 +1,22 @@
+.report-page { margin: 2.5rem auto; max-width: 72rem; padding: 0 1.25rem 3rem; }
+.report-page h1 { font-size: 1.9rem; letter-spacing: -.03em; margin: 0 0 .5rem; }
+.report-intro, .report-empty { color: var(--neutral-500); margin: 0 0 1.25rem; }
+.report-empty { background: var(--surface); border: 1px dashed var(--neutral-200); border-radius: .75rem; padding: 1.25rem; }
+.report-back { color: var(--blue-600); display: inline-block; font-weight: 700; margin-bottom: 1rem; text-decoration: none; }
+.report-heading { align-items: flex-start; display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; }
+
+.report-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }
+.report-card { background: var(--surface); border: 1px solid var(--neutral-200); border-radius: 1rem; box-shadow: 0 .8rem 2rem rgb(22 47 83 / .06); display: flex; flex-direction: column; padding: 1.35rem; }
+.report-card h2 { font-size: 1.15rem; margin: 0 0 .5rem; }
+.report-card p { color: var(--neutral-500); flex: 1; margin: 0 0 1rem; }
+.report-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 1rem; }
+.report-button { background: var(--blue-600); border-radius: .65rem; color: #fff; font-weight: 800; padding: .65rem 1rem; text-decoration: none; white-space: nowrap; }
+.report-button:hover { background: var(--navy-800); }
+.report-link { color: var(--blue-600); font-weight: 700; }
+
+.report-table-wrap { overflow-x: auto; }
+.report-table { background: var(--surface); border: 1px solid var(--neutral-200); border-collapse: collapse; width: 100%; }
+.report-table th, .report-table td { border-bottom: 1px solid var(--neutral-200); padding: .6rem .7rem; text-align: left; white-space: nowrap; }
+.report-table th { color: var(--neutral-500); font-size: .82rem; letter-spacing: .04em; text-transform: uppercase; }
+.report-table .num { font-variant-numeric: tabular-nums; text-align: right; }
+.report-table tfoot td { border-bottom: 0; border-top: 2px solid var(--neutral-200); font-weight: 800; }
