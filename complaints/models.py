@@ -36,9 +36,12 @@ class Complaint(models.Model):
         related_name="complaints",
         limit_choices_to={"role": "student"},
     )
-    category = models.CharField(max_length=30, choices=Category.choices)
+    # Status and category are the complaint list filters, so both are indexed (NFR-5).
+    category = models.CharField(max_length=30, choices=Category.choices, db_index=True)
     description = models.TextField(validators=[MaxLengthValidator(DESCRIPTION_MAX_LENGTH)])
-    status = models.CharField(max_length=15, choices=Status.choices, default=Status.OPEN)
+    status = models.CharField(
+        max_length=15, choices=Status.choices, default=Status.OPEN, db_index=True
+    )
     raised_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

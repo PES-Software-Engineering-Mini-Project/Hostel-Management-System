@@ -1,0 +1,8 @@
+{% comment %}Flash messages for pages without their own app stylesheet.{% endcomment %}
+{% if messages %}
+  <ul class="site-messages">
+    {% for message in messages %}
+      <li class="site-message site-message-{{ message.tags }}" role="status">{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}

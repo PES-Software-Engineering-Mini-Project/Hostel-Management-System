@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from accounts.decorators import admin_required, student_required
+from config.pagination import paginate
 from .forms import BlockForm, RoomApplicationForm, RoomFilterForm, RoomForm
 from .models import (
     Block,
@@ -20,11 +21,12 @@ def room_list(request):
     filter_form = RoomFilterForm(request.GET)
     rooms = filter_form.filter(Room.objects.select_related("block"))
     blocks = Block.objects.all()
+    page_obj = paginate(request, rooms)
 
     return render(
         request,
         "rooms/room_list.html",
-        {"rooms": rooms, "blocks": blocks, "filter_form": filter_form},
+        {"rooms": page_obj, "page_obj": page_obj, "blocks": blocks, "filter_form": filter_form},
     )
 
 
@@ -104,6 +106,7 @@ def pending_applications(request):
     applications = RoomApplication.objects.filter(
         status=RoomApplication.Status.PENDING
     ).select_related("student", "preferred_block")
+    page_obj = paginate(request, applications)
 
     rooms = Room.objects.select_related("block").filter(
         occupied_count__lt=F("capacity")
@@ -113,7 +116,8 @@ def pending_applications(request):
         request,
         "rooms/pending_applications.html",
         {
-            "applications": applications,
+            "applications": page_obj,
+            "page_obj": page_obj,
             "rooms": rooms,
         },
     )
@@ -184,9 +188,11 @@ def deallocate_student(request, allocation_id):
 
 @admin_required
 def allocation_list(request):
+    # Ordered so pages are stable: newest allocations first.
     allocations = RoomAllocation.objects.select_related(
         "student", "room", "room__block"
-    ).all()
+    ).order_by("-allocated_at", "-pk")
+    page_obj = paginate(request, allocations)
 
     available_rooms = Room.objects.select_related("block").filter(
         occupied_count__lt=F("capacity")
@@ -196,7 +202,8 @@ def allocation_list(request):
         request,
         "rooms/allocation_list.html",
         {
-            "allocations": allocations,
+            "allocations": page_obj,
+            "page_obj": page_obj,
             "available_rooms": available_rooms,
         },
     )

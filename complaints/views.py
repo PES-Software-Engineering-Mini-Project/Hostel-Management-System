@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from accounts.decorators import admin_required, student_required
+from config.pagination import paginate
 
 from .forms import ComplaintFilterForm, ComplaintForm
 from .models import Complaint
@@ -26,10 +27,11 @@ def my_complaints(request):
     # Starting from the student's own complaints keeps their search private (FR-9.5).
     filter_form = ComplaintFilterForm(request.GET)
     complaints = filter_form.filter(request.user.complaints.all())
+    page_obj = paginate(request, complaints)
     return render(
         request,
         "complaints/my_complaints.html",
-        {"complaints": complaints, "filter_form": filter_form},
+        {"complaints": page_obj, "page_obj": page_obj, "filter_form": filter_form},
     )
 
 
@@ -44,10 +46,11 @@ def complaint_detail(request, pk):
 def complaint_list(request):
     filter_form = ComplaintFilterForm(request.GET)
     complaints = filter_form.filter(Complaint.objects.select_related("student"))
+    page_obj = paginate(request, complaints)
     return render(
         request,
         "complaints/complaint_list.html",
-        {"complaints": complaints, "filter_form": filter_form},
+        {"complaints": page_obj, "page_obj": page_obj, "filter_form": filter_form},
     )
 
 

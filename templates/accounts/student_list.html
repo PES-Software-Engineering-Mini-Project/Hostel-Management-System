@@ -35,6 +35,7 @@
           {% endfor %}
         </tbody>
       </table></div>
+      {% include "_pagination.html" %}
     {% else %}
       {% if search_form.is_filtering %}
         <p class="no-results">No results found for &ldquo;{{ search_form.data.q }}&rdquo;.</p>

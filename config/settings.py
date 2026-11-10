@@ -98,3 +98,6 @@ LOGIN_URL = "login"
 
 # A term's fee due is the allotted room's monthly fee times this many months (SRS FR-5.1).
 HMS_MONTHS_PER_TERM = int(os.getenv("HMS_MONTHS_PER_TERM", "6"))
+
+# Rows shown per page on list pages (NFR-5).
+HMS_PAGE_SIZE = int(os.getenv("HMS_PAGE_SIZE", "25"))

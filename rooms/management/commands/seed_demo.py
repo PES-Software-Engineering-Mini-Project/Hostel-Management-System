@@ -3,12 +3,18 @@
 Creates blocks with rooms, students, fee records with payments and complaints
 at a configurable scale, without touching existing rows. Safe to re-run:
 existing SRNs, blocks and fee records are skipped.
+
+For the NFR-5 scale (about 1000 students and 500 rooms) run::
+
+    python manage.py seed_demo --blocks 5 --rooms-per-block 100 --students 1000
 """
 
+import math
 import random
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
@@ -20,6 +26,14 @@ FIRST_NAMES = ["Aarav", "Diya", "Karan", "Meera", "Rohan", "Sana", "Vikram", "An
 LAST_NAMES = ["Sharma", "Rao", "Patel", "Iyer", "Khan", "Das", "Nair", "Gupta"]
 BRANCHES = ["CSE", "ECE", "ME", "CE", "EEE"]
 TERMS = ["2026-27 Odd Semester"]
+ROOMS_PER_FLOOR = 10
+SRNS_PER_YEAR = 900  # CS100 to CS999 keeps every SRN at the 13-character limit
+
+
+def seeded_srn(index):
+    """PES1UG23CS100 ... PES1UG23CS999, then PES1UG24CS100 ... for larger seeds."""
+    year = 23 + index // SRNS_PER_YEAR
+    return f"PES1UG{year}CS{100 + index % SRNS_PER_YEAR:03d}"
 
 
 class Command(BaseCommand):
@@ -41,18 +55,22 @@ class Command(BaseCommand):
         rng = random.Random(20261030)
         User = get_user_model()
 
+        floors = max(4, math.ceil(options["rooms_per_block"] / ROOMS_PER_FLOOR))
         blocks = []
         for i in range(options["blocks"]):
             block, _ = Block.objects.get_or_create(
-                name=f"Block {chr(ord('A') + i)}", defaults={"number_of_floors": 4}
+                name=f"Block {chr(ord('A') + i)}", defaults={"number_of_floors": floors}
             )
+            if block.number_of_floors < floors:
+                block.number_of_floors = floors
+                block.save(update_fields=["number_of_floors"])
             blocks.append(block)
 
         rooms = []
         for block in blocks:
             existing = set(block.rooms.values_list("room_number", flat=True))
             for i in range(options["rooms_per_block"]):
-                room_number = f"{i // 10 + 1}{i % 10:02d}"
+                room_number = f"{i // ROOMS_PER_FLOOR + 1}{i % ROOMS_PER_FLOOR:02d}"
                 if room_number in existing:
                     continue
                 room_type = rng.choice(list(Room.RoomType))
@@ -65,7 +83,7 @@ class Command(BaseCommand):
                     Room(
                         block=block,
                         room_number=room_number,
-                        floor=i // 10 + 1,
+                        floor=i // ROOMS_PER_FLOOR + 1,
                         room_type=room_type,
                         capacity=capacity,
                         monthly_fee=Decimal(rng.choice([3500, 4500, 5500, 7000])),
@@ -76,7 +94,7 @@ class Command(BaseCommand):
         existing_srns = set(User.objects.values_list("srn", flat=True))
         students = []
         for i in range(options["students"]):
-            srn = f"PES1UG23CS{100 + i:03d}"
+            srn = seeded_srn(i)
             if srn in existing_srns:
                 continue
             students.append(
@@ -91,8 +109,11 @@ class Command(BaseCommand):
                     role=User.Role.STUDENT,
                 )
             )
+        # One hash shared by every seeded student: hashing 1000 passwords one by one takes
+        # minutes, and these are demo accounts with the same password anyway.
+        password_hash = make_password(options["password"])
         for student in students:
-            student.set_password(options["password"])
+            student.password = password_hash
         User.objects.bulk_create(students)
         students = list(
             User.objects.filter(role=User.Role.STUDENT, email__startswith="seeded.")
