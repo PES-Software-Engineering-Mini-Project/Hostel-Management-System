@@ -134,7 +134,8 @@ def fee_due_report():
     totals = []
     if rows:
         students = len({row[0] for row in rows})
-        totals = [f"{students} students", "", "", "", "", "", total_outstanding]
+        label = "1 student" if students == 1 else f"{students} students"
+        totals = [label, "", "", "", "", "", total_outstanding]
     return ReportData(
         headers=["SRN", "Student", "Room", "Term", "Amount due", "Paid", "Balance"],
         rows=rows,

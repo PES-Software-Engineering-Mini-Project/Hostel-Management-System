@@ -84,7 +84,7 @@ class FeeDueReportTests(TestCase):
         make_fee(student, "2000.00", term="2026-27 Even")
         data = fee_due_report()
         self.assertEqual([row[3] for row in data.rows], ["2026-27 Even", "2026-27 Odd"])
-        self.assertEqual(data.totals[0], "1 students")
+        self.assertEqual(data.totals[0], "1 student")
 
     def test_query_count_does_not_grow_with_records(self):
         for i in range(20):

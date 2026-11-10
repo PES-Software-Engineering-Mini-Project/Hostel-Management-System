@@ -148,7 +148,7 @@ class CsvDownloadTests(ReportsTestCase):
         response = self.client.get(reverse("reports:detail", args=["fee-dues"]))
         self.assertContains(response, "PES1UG23CS050")
         self.assertContains(response, "20000.00")
-        self.assertContains(response, "1 students")
+        self.assertContains(response, "1 student<")
         self.assertContains(response, reverse("reports:csv", args=["fee-dues"]))
 
     def test_blank_room_shows_a_dash_on_screen_and_blank_in_csv(self):
