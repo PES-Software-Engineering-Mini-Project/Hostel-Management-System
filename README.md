@@ -53,6 +53,29 @@ fees, complaints, visitors, search, and reports remain separate stories.
    Visit `http://127.0.0.1:8000/`. The Django admin is at `/admin/`; create a
    superuser with `python manage.py createsuperuser` when needed.
 
+## Project structure (NFR-6)
+
+Each feature is its own Django app with its own models, views, templates and tests:
+
+| App | Owns |
+|---|---|
+| `accounts` | users, roles, login, registration, profiles, admin dashboard, shared role checks (`accounts/decorators.py`) |
+| `rooms` | blocks, rooms, applications, allocations, `seed_demo` |
+| `fees` | fee records, payments, receipts |
+| `complaints` | complaints and their status flow |
+| `visitors` | visitor entry and exit |
+
+`config/` holds project settings, root URLs and project-wide helpers, and `templates/`
+holds the base layout and shared partials.
+
+Rules, enforced by `accounts/tests/test_maintainability.py` so CI fails if they are broken:
+
+- An app may import another app's **models** and `accounts.decorators`, nothing else. If
+  two apps need the same helper, move it to `config/` rather than importing across apps.
+- Every app has its own `tests.py` or `tests/` package. An app with pages (`urls.py`) has
+  both unit tests and integration tests that go through the Django test client.
+- CI runs the whole suite (no app label) on every push and pull request.
+
 ## Continuous integration
 
 GitHub Actions (`.github/workflows/ci.yml`) runs on every push and on every pull
