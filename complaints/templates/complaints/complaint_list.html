@@ -55,6 +55,7 @@
         </tbody>
       </table>
     </div>
+    {% include "_pagination.html" %}
   {% else %}
     {% if filter_form.is_filtering %}
       <p class="complaint-empty no-results">No results found. Try a different status or category.</p>

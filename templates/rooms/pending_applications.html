@@ -7,6 +7,7 @@
 <main class="area-page">
   <section class="area-card">
     <h1>Pending Room Applications</h1>
+    {% include "_messages.html" %}
 
     {% for application in applications %}
       <article>
@@ -41,6 +42,7 @@
     {% empty %}
       <p>No pending applications.</p>
     {% endfor %}
+    {% include "_pagination.html" %}
 
     <p><a href="{% url 'rooms:allocation-list' %}">Manage Allocations</a></p>
   </section>
