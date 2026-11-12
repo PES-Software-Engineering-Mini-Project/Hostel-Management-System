@@ -55,3 +55,4 @@ button.fee-button { border: 0; cursor: pointer; font: inherit; font-weight: 800;
   .fee-page { margin: 0; max-width: none; }
   .receipt { border: 0; box-shadow: none; }
 }
+.actions-header { position: relative; }
