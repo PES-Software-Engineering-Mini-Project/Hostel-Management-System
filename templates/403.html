@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Access denied | HMS{% endblock %}
+
+{% block page_content %}
+<main class="area-page">
+  <section class="area-card">
+    <h1>Access denied</h1>
+    <p>You do not have permission to open this page. If you think this is a mistake, contact the hostel office.</p>
+    <p><a href="{% url 'home' %}">Back to the home page</a></p>
+  </section>
+</main>
+{% endblock %}

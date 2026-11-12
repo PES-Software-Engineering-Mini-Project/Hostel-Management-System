@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Page not found | HMS{% endblock %}
+
+{% block page_content %}
+<main class="area-page">
+  <section class="area-card">
+    <h1>Page not found</h1>
+    <p>The page you asked for does not exist or may have been moved. Check the address, or use the navigation above.</p>
+    <p><a href="{% url 'home' %}">Back to the home page</a></p>
+  </section>
+</main>
+{% endblock %}
