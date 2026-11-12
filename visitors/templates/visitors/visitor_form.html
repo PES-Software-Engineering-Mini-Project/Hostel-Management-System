@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Register a visitor | HMS{% endblock %}
+
+{% block page_content %}
+<link rel="stylesheet" href="{% static 'visitors/css/visitors.css' %}">
+<main class="visitor-page visitor-page-narrow">
+  <a class="visitor-back" href="{% url 'visitors:my-visitors' %}">&larr; Back to my visitors</a>
+  <section class="area-card">
+    <h1>Register a visitor</h1>
+    {% include "visitors/_messages.html" %}
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="form-alert" role="alert">{{ form.non_field_errors }}</div>
+      {% endif %}
+      {% for field in form %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+      {% endfor %}
+      <button class="login-button" type="submit">Register visitor</button>
+    </form>
+  </section>
+</main>
+{% endblock %}

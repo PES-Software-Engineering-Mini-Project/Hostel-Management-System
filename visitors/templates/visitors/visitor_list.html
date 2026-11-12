@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Visitor log | HMS{% endblock %}
+
+{% block page_content %}
+<link rel="stylesheet" href="{% static 'visitors/css/visitors.css' %}">
+<main class="visitor-page">
+  <div class="visitor-heading">
+    <h1>Visitor log</h1>
+  </div>
+  {% include "visitors/_messages.html" %}
+  {% include "_filter_bar.html" with form=filter_form submit_label="Apply filter" %}
+
+  {% if visitors %}
+    <div class="visitor-table-wrap">
+      <table class="visitor-table">
+        <thead>
+          <tr>
+            <th scope="col">Visitor</th>
+            <th scope="col">Contact</th>
+            <th scope="col">Purpose</th>
+            <th scope="col">Host</th>
+            <th scope="col">Entry</th>
+            <th scope="col">Exit</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for visitor in visitors %}
+            <tr>
+              <td>{{ visitor.name }}</td>
+              <td>{{ visitor.contact_number }}</td>
+              <td>{{ visitor.purpose|truncatechars:40 }}</td>
+              <td>{{ visitor.host.get_full_name }}<br><span class="visitor-sub">{{ visitor.host.srn }}</span></td>
+              <td class="when">{{ visitor.entry_time|date:"d M Y, H:i" }}</td>
+              <td class="when">{% if visitor.exit_time %}{{ visitor.exit_time|date:"d M Y, H:i" }}{% else %}-{% endif %}</td>
+              <td>
+                {% if visitor.is_inside %}
+                  <span class="visitor-badge visitor-badge-inside">Inside</span>
+                  <form class="visitor-inline-form" method="post" action="{% url 'visitors:check-out' visitor.pk %}">
+                    {% csrf_token %}
+                    <button class="visitor-button" type="submit">Check out</button>
+                  </form>
+                {% else %}
+                  <span class="visitor-badge visitor-badge-checked-out">Checked out</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    {% if filter_form.is_filtering %}
+      <p class="visitor-empty no-results">No visitors match this filter.</p>
+    {% else %}
+      <p class="visitor-empty">No visitors recorded yet.</p>
+    {% endif %}
+  {% endif %}
+</main>
+{% endblock %}
