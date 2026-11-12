@@ -1,6 +1,9 @@
+from decimal import Decimal
+
 from django.contrib.auth import get_user_model
 
 from complaints.models import Complaint
+from rooms.models import Block, Room, RoomAllocation
 
 
 def make_user(srn, role=None, **extra):
@@ -25,3 +28,19 @@ def make_complaint(student, category=Complaint.Category.PLUMBING, description="T
     return Complaint.objects.create(
         student=student, category=category, description=description, **extra
     )
+
+
+def allot_room(student, room_number="101", block_name="A Block"):
+    """Give a student an active room allocation for complaint room tagging (FR-6.2)."""
+    block, _ = Block.objects.get_or_create(name=block_name, defaults={"number_of_floors": 3})
+    room = Room.objects.create(
+        block=block,
+        room_number=room_number,
+        floor=1,
+        room_type=Room.RoomType.DOUBLE,
+        capacity=2,
+        monthly_fee=Decimal("5000.00"),
+        occupied_count=1,
+    )
+    RoomAllocation.objects.create(student=student, room=room)
+    return room

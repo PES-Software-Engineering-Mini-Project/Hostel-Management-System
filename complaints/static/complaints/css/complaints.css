@@ -25,6 +25,7 @@
 .complaint-badge-in_progress { background: #fff6dd; color: #7a5200; }
 .complaint-badge-resolved { background: #e3f6ec; color: #11643a; }
 .complaint-empty { color: var(--neutral-500); }
+.complaint-sub { color: var(--neutral-500); font-size: .82rem; white-space: nowrap; }
 
 .complaint-messages { list-style: none; margin: 0 0 1rem; padding: 0; }
 .complaint-message { background: #e3f6ec; border: 1px solid #a6dfc0; border-radius: .65rem; color: #11643a; margin-bottom: .5rem; padding: .8rem .9rem; }

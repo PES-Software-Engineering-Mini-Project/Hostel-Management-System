@@ -15,6 +15,9 @@ def raise_complaint(request):
     if request.method == "POST" and form.is_valid():
         complaint = form.save(commit=False)
         complaint.student = request.user  # never taken from the form (NFR-3)
+        # FR-6.2: tag the student's current allotted room; the form never sets it (NFR-3).
+        allocation = getattr(request.user, "room_allocation", None)
+        complaint.room = allocation.room if allocation is not None else None
         complaint.save()  # status is not in the form, so it always starts as Open (FR-6.3)
         messages.success(request, "Your complaint has been submitted.")
         return redirect("complaints:my-complaints")
@@ -43,7 +46,7 @@ def complaint_detail(request, pk):
 @admin_required
 def complaint_list(request):
     filter_form = ComplaintFilterForm(request.GET)
-    complaints = filter_form.filter(Complaint.objects.select_related("student"))
+    complaints = filter_form.filter(Complaint.objects.select_related("student", "room__block"))
     return render(
         request,
         "complaints/complaint_list.html",

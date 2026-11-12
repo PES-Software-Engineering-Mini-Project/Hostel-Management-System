@@ -10,8 +10,9 @@ DESCRIPTION_MAX_LENGTH = 500
 class Complaint(models.Model):
     """A maintenance complaint raised by a student (FR-6.1).
 
-    The student's room (FR-6.2) is not stored yet. It needs room allocation, which arrives
-    with SCRUM-9 in Sprint 2.
+    The room (FR-6.2) is a snapshot of the student's allotted room when the complaint is
+    raised. It stays put if the student moves later, so maintenance still finds the room
+    the complaint is about. It is empty for a student without an allotted room.
     """
 
     class Category(models.TextChoices):
@@ -35,6 +36,13 @@ class Complaint(models.Model):
         on_delete=models.CASCADE,
         related_name="complaints",
         limit_choices_to={"role": "student"},
+    )
+    room = models.ForeignKey(
+        "rooms.Room",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="complaints",
     )
     category = models.CharField(max_length=30, choices=Category.choices)
     description = models.TextField(validators=[MaxLengthValidator(DESCRIPTION_MAX_LENGTH)])
