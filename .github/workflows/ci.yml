@@ -12,7 +12,45 @@ concurrency:
 
 jobs:
   test:
-    name: test (Python ${{ matrix.python-version }})
+    name: test (Python ${{ matrix.python-version }}, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12"]
+        # NFR-7: the app must run on Windows, Linux and macOS, so the SQLite suite
+        # (as used locally) runs on all three.
+        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Django system checks
+        run: python manage.py check
+
+      - name: Check for missing migrations
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Run tests (SQLite, as used locally)
+        run: python manage.py test --verbosity 2
+
+  test-postgres:
+    # SAD 3.7: run the tests on PostgreSQL as well; row-locking tests only run here.
+    # GitHub-hosted services need a Linux runner, so this job stays on Ubuntu.
+    name: test (Python ${{ matrix.python-version }}, PostgreSQL)
     runs-on: ubuntu-latest
 
     services:
@@ -50,16 +88,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Django system checks
-        run: python manage.py check
-
-      - name: Check for missing migrations
-        run: python manage.py makemigrations --check --dry-run
-
-      - name: Run tests (SQLite, as used locally)
-        run: python manage.py test --verbosity 2
-
-      # SAD 3.7: run the suite on PostgreSQL as well; row-locking tests only run here.
       - name: Run tests (PostgreSQL)
         env:
           DATABASE_ENGINE: django.db.backends.postgresql
