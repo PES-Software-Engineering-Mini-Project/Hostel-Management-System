@@ -11,7 +11,7 @@ Requirements document (`FR_NFR.pdf`).
 **Status values:** *Accepted* (a deliberate change we are keeping) · *Planned* (will be
 brought in line, tracked by an issue) · *Open* (a decision is still needed).
 
-_Last updated: 1 Nov 2026, end of Sprint 2 (rooms, allocation, dashboard, profiles, NFR tests, fees from room fee, receipts, search)._
+_Last updated: 15 Nov 2026, Sprint 3 (visitors, complaint room tags, reports, error pages, NFR-5 to NFR-8). NFR-5 pagination, indexes and the 1000-student seed (PR #55) match SAD §3.6–3.7, so they add no deviation._
 
 ## Summary
 
@@ -30,7 +30,7 @@ _Last updated: 1 Nov 2026, end of Sprint 2 (rooms, allocation, dashboard, profil
 | D-11 | Testing | CI ran on SQLite only, not also on PostgreSQL | **Resolved** | #23, PR #45 → #52 |
 | D-12 | Schedule | Sprints ran late; visitors and complaint room tags move to Sprint 3 | Accepted | #5, #49 |
 | D-13 | Tracking | Jira is used alongside the GitHub Project backlog | Accepted | — |
-| D-14 | Complaints | Complaints are not yet tagged with the student's room | **Resolved** | #49 (this branch) |
+| D-14 | Complaints | Complaints are not yet tagged with the student's room | **Resolved** | #49, PR #60 |
 | D-15 | Rooms | Application and allocation routes differ from the SAD API design | Accepted | #15, PR #38 |
 | D-16 | Fees | Room fee changes and moves don't change an existing term's fee | Accepted | #14, PR #47 |
 | D-17 | Reports | The admin dashboard stays in `accounts`; only reports and CSV are in the new `reports` app | Accepted | #19 |
@@ -133,7 +133,7 @@ _Last updated: 1 Nov 2026, end of Sprint 2 (rooms, allocation, dashboard, profil
 - **Reason:** room allocation does not exist yet, so a student has no room to tag.
 - **Plan:** add the room link once allocation (#15) is merged, in Sprint 2.
 - **Update:** allocation was merged in Sprint 2 (PR #38), but the complaint room link was not built in time. It is tracked in #49 for Sprint 3.
-- **Resolved (#49):** a new complaint stores the student's allotted room as a snapshot, set by the view. A student with no room can still complain and the room stays empty. Deleting an empty room keeps the complaint and clears its room. Complaints raised before this change have no room.
+- **Resolved (#49, PR #60):** a new complaint stores the student's allotted room as a snapshot, set by the view. A student with no room can still complain and the room stays empty. Deleting an empty room keeps the complaint and clears its room. Complaints raised before this change have no room.
 
 ### D-15 · Room application and allocation routes
 
