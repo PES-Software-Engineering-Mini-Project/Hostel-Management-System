@@ -103,9 +103,13 @@ def apply_for_room(request):
 
 @admin_required
 def pending_applications(request):
-    applications = RoomApplication.objects.filter(
-        status=RoomApplication.Status.PENDING
-    ).select_related("student", "preferred_block")
+    # pk breaks ties between applications made in the same instant, so pages never
+    # repeat or skip one (NFR-5).
+    applications = (
+        RoomApplication.objects.filter(status=RoomApplication.Status.PENDING)
+        .select_related("student", "preferred_block")
+        .order_by("applied_at", "pk")
+    )
     page_obj = paginate(request, applications)
 
     rooms = Room.objects.select_related("block").filter(

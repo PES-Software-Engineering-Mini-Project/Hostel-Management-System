@@ -19,6 +19,7 @@ from django.urls import reverse
 from complaints.models import Complaint
 from fees.models import FeeRecord
 from rooms.models import Room, RoomAllocation, RoomApplication
+from visitors.models import Visitor
 
 STUDENTS = 1000
 BLOCKS = 5
@@ -59,6 +60,16 @@ class ScaleTestCase(TestCase):
             Complaint(student=cls.busy_student, category="other", description=f"Issue {i}.")
             for i in range(40)
         )
+        # Visitors are logged against students who hold a room (FR-7.5).
+        cls.host_student = students[0]
+        Visitor.objects.bulk_create(
+            Visitor(host=student, name=f"Visitor {i}", phone="9876543210", purpose="Visit")
+            for i, student in enumerate(students[:100] * 2)
+        )
+        Visitor.objects.bulk_create(
+            Visitor(host=cls.host_student, name=f"Guest {i}", phone="9876543210", purpose="Visit")
+            for i in range(30)
+        )
 
     def timed_get(self, url):
         with CaptureQueriesContext(connection) as queries:
@@ -94,6 +105,7 @@ class PaginatedListTests(ScaleTestCase):
             reverse("rooms:allocation-list"),
             reverse("fees:fee-list"),
             reverse("complaints:complaint-list"),
+            reverse("visitors:visitor-list"),
         ]
 
     def test_admin_lists_are_paginated_within_query_and_time_limits(self):
@@ -123,6 +135,29 @@ class PaginatedListTests(ScaleTestCase):
         self.assertEqual(len(page.object_list), settings.HMS_PAGE_SIZE)
         self.assertTrue(all(c.student_id == self.busy_student.pk for c in page.object_list))
         self.assertLessEqual(query_count, QUERY_LIMIT)
+
+    def test_student_visitor_list_is_paginated(self):
+        self.client.force_login(self.host_student)
+        response, query_count, _ = self.timed_get(reverse("visitors:my-visitors"))
+        page = response.context["page_obj"]
+        self.assertEqual(len(page.object_list), settings.HMS_PAGE_SIZE)
+        self.assertGreater(page.paginator.num_pages, 1)
+        self.assertTrue(all(v.host_id == self.host_student.pk for v in page.object_list))
+        self.assertLessEqual(query_count, QUERY_LIMIT)
+
+    def test_pending_applications_page_through_each_once(self):
+        # Applications bulk-created in one instant share applied_at; pk keeps the order stable.
+        self.client.force_login(self.admin_user)
+        url = reverse("rooms:pending-applications")
+        first = self.client.get(url)
+        seen = [a.pk for a in first.context["page_obj"].object_list]
+        for number in range(2, first.context["page_obj"].paginator.num_pages + 1):
+            response = self.client.get(url, {"page": number})
+            seen += [a.pk for a in response.context["page_obj"].object_list]
+        self.assertEqual(len(seen), len(set(seen)))
+        self.assertEqual(
+            len(seen), RoomApplication.objects.filter(status=RoomApplication.Status.PENDING).count()
+        )
 
     def test_pages_do_not_repeat_or_skip_rows(self):
         self.client.force_login(self.admin_user)

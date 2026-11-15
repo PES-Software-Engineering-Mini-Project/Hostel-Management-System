@@ -145,9 +145,12 @@ class Command(BaseCommand):
                     )
             Payment.objects.bulk_create(payments)
 
+        # Like rooms and students, re-running only tops complaints up to the requested
+        # number instead of adding another full set.
         complaints = []
         categories = list(Complaint.Category)
-        for i in range(options["complaints"]):
+        existing = Complaint.objects.filter(description__startswith="Seeded complaint ").count()
+        for i in range(existing, options["complaints"]):
             complaints.append(
                 Complaint(
                     student=rng.choice(students),

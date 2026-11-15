@@ -4,6 +4,7 @@ from django.core.management import call_command
 from django.test import TestCase
 
 from accounts.models import User
+from complaints.models import Complaint
 from rooms.models import Room
 
 
@@ -29,3 +30,10 @@ class SeedDemoCommandTests(TestCase):
         call_command("seed_demo", stdout=StringIO(), **options)
 
         self.assertEqual(Room.objects.count(), 2)
+
+    def test_rerunning_seed_demo_does_not_duplicate_complaints(self):
+        options = {"blocks": 1, "rooms_per_block": 2, "students": 2, "complaints": 3}
+        call_command("seed_demo", stdout=StringIO(), **options)
+        call_command("seed_demo", stdout=StringIO(), **options)
+
+        self.assertEqual(Complaint.objects.count(), 3)
