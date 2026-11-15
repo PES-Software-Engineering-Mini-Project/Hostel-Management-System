@@ -8,7 +8,7 @@
 .fee-button { background: var(--blue-600); border-radius: .65rem; color: #fff; font-weight: 800; padding: .65rem 1rem; text-decoration: none; }
 .fee-button:hover { background: var(--navy-800); }
 
-.fee-table-wrap { overflow-x: auto; }
+.fee-table-wrap { overflow-x: auto; position: relative; } /* NFR-7: keeps the absolutely placed .visually-hidden header cell inside the scroll area; otherwise Chromium scrolls the whole page sideways at 360px */
 .fee-table { background: var(--surface); border: 1px solid var(--neutral-200); border-collapse: collapse; border-radius: .75rem; width: 100%; }
 .fee-table th, .fee-table td { border-bottom: 1px solid var(--neutral-200); padding: .6rem .7rem; text-align: left; white-space: nowrap; }
 .fee-table th { color: var(--neutral-500); font-size: .82rem; letter-spacing: .04em; text-transform: uppercase; }

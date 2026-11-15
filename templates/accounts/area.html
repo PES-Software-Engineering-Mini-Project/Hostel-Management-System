@@ -31,11 +31,14 @@
       <p><a href="{% url 'fees:fee-list' %}">Manage fees</a></p>
       <p><a href="{% url 'student-list' %}">Student records</a></p>
       <p><a href="{% url 'complaints:complaint-list' %}">Manage complaints</a></p>
+      <p><a href="{% url 'visitors:visitor-list' %}">Visitor log</a></p>
     {% else %}
       <p><a href="{% url 'fees:my-fees' %}">View my fees</a></p>
       <p><a href="{% url 'profile-edit' %}">My profile</a></p>
       <p><a href="{% url 'complaints:raise' %}">Raise a complaint</a></p>
       <p><a href="{% url 'complaints:my-complaints' %}">My complaints</a></p>
+      <p><a href="{% url 'visitors:register' %}">Register a visitor</a></p>
+      <p><a href="{% url 'visitors:my-visitors' %}">My visitors</a></p>
     {% endif %}
   </section>
 </main>

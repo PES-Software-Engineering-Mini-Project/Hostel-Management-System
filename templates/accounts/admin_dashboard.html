@@ -38,6 +38,11 @@
       <p>Waiting for a room</p>
       <a href="{% url 'rooms:pending-applications' %}">Review applications</a>
     </article>
+    <article class="dashboard-card">
+      <h2>Visitor log</h2>
+      <p>Visitors on premises and checkout</p>
+      <a href="{% url 'visitors:visitor-list' %}">Open visitor log</a>
+    </article>
   </section>
 </main>
 {% endblock %}

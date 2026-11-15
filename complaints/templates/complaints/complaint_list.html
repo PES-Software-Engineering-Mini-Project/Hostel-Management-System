@@ -19,6 +19,7 @@
           <tr>
             <th scope="col">SRN</th>
             <th scope="col">Student</th>
+            <th scope="col">Room</th>
             <th scope="col">Category</th>
             <th scope="col">Description</th>
             <th scope="col">Raised</th>
@@ -31,6 +32,7 @@
             <tr>
               <td>{{ complaint.student.srn }}</td>
               <td>{{ complaint.student.get_full_name }}</td>
+              <td>{{ complaint.room|default:"—" }}</td>
               <td>{{ complaint.get_category_display }}</td>
               <td>{{ complaint.description|linebreaksbr }}</td>
               <td class="when">{{ complaint.raised_at|date:"d M Y, H:i" }}</td>
