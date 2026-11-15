@@ -7,6 +7,7 @@ from django.template.loader import render_to_string
 
 from accounts.decorators import admin_required, student_required
 from accounts.models import User
+from config.pagination import paginate
 
 from .forms import FeeRecordForm, PaymentForm
 from .models import FeeRecord, Payment
@@ -15,7 +16,10 @@ from .models import FeeRecord, Payment
 @admin_required
 def fee_list(request):
     records = FeeRecord.objects.select_related("student", "room__block").with_totals()
-    return render(request, "fees/fee_list.html", {"records": records})
+    # The primary key breaks ties between records created in the same instant.
+    records = records.order_by("-created_at", "-pk")
+    page_obj = paginate(request, records)
+    return render(request, "fees/fee_list.html", {"records": page_obj, "page_obj": page_obj})
 
 
 @admin_required

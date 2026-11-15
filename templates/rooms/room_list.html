@@ -56,6 +56,7 @@
           </tbody>
         </table>
       </div>
+      {% include "_pagination.html" %}
     {% elif filter_form.is_filtering %}
       <p class="no-results">No results found. Try different filters.</p>
     {% else %}

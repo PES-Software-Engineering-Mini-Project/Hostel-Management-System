@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from complaints.models import Complaint
+from config.pagination import paginate
 from fees.models import FeeRecord
 from rooms.models import Room, RoomApplication
 
@@ -132,10 +133,11 @@ def profile_edit(request):
 def student_list(request):
     search_form = StudentSearchForm(request.GET)
     students = search_form.filter(User.objects.filter(role=User.Role.STUDENT)).order_by("srn")
+    page_obj = paginate(request, students)
     return render(
         request,
         "accounts/student_list.html",
-        {"students": students, "search_form": search_form},
+        {"students": page_obj, "page_obj": page_obj, "search_form": search_form},
     )
 
 

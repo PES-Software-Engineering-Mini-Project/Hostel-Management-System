@@ -56,15 +56,16 @@ class PerformanceTestCase(TestCase):
 
 
 class ConstantQueryTests(PerformanceTestCase):
+    # Paginated lists (NFR-5) add one COUNT query for the page links.
     def test_admin_fee_list_is_constant_query(self):
         self.client.force_login(self.admin_user)
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(4):
             response = self.client.get(reverse("fees:fee-list"))
         self.assertEqual(response.status_code, 200)
 
     def test_admin_complaint_list_is_constant_query(self):
         self.client.force_login(self.admin_user)
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(4):
             response = self.client.get(reverse("complaints:complaint-list"))
         self.assertEqual(response.status_code, 200)
 
@@ -76,6 +77,6 @@ class ConstantQueryTests(PerformanceTestCase):
 
     def test_my_complaints_is_constant_query(self):
         self.client.force_login(self.student)
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(4):
             response = self.client.get(reverse("complaints:my-complaints"))
         self.assertEqual(response.status_code, 200)

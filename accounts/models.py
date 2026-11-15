@@ -48,7 +48,10 @@ class User(AbstractUser):
     year_of_study = models.PositiveSmallIntegerField(
         null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(9)]
     )
-    role = models.CharField(max_length=10, choices=Role.choices, default=Role.STUDENT)
+    # Indexed because every student list and dashboard count filters on role (NFR-5).
+    role = models.CharField(
+        max_length=10, choices=Role.choices, default=Role.STUDENT, db_index=True
+    )
 
     USERNAME_FIELD = "srn"
     REQUIRED_FIELDS = ["email", "first_name", "last_name", "contact_number"]

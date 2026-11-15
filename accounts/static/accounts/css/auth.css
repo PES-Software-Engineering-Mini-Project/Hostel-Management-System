@@ -135,3 +135,14 @@ input:focus { border-color: var(--teal-500); }
 .filter-submit:hover { background: var(--navy-800); }
 .filter-clear { color: var(--blue-600); font-weight: 700; }
 .no-results { color: var(--neutral-500); }
+
+/* Pagination for list pages (NFR-5) */
+.pagination { align-items: center; display: flex; flex-wrap: wrap; gap: .5rem 1rem; justify-content: center; margin: 1.25rem 0 0; }
+.pagination a { border: 1px solid var(--neutral-200); border-radius: .55rem; color: var(--blue-600); font-weight: 700; padding: .45rem .75rem; text-decoration: none; }
+.pagination a:hover { background: var(--neutral-50); }
+.pagination-current { color: var(--navy-950); font-weight: 700; }
+.pagination-count { color: var(--neutral-500); font-weight: 400; }
+.site-messages { list-style: none; margin: 0 0 1rem; padding: 0; }
+.site-message { background: #e3f6ec; border: 1px solid #a6dfc0; border-radius: .65rem; color: #11643a; margin-bottom: .5rem; padding: .8rem .9rem; }
+.site-message-error { background: #fff1f0; border-color: #f2b8b3; color: #8a1c13; }
+.site-message-info { background: #eef5ff; border-color: #bcdcff; color: #163a6b; }

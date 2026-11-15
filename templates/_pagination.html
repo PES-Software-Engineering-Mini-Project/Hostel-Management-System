@@ -1,0 +1,17 @@
+{% comment %}Page links for a paginated list (NFR-5). Pass the page as `page_obj`; filters in the query string are kept.{% endcomment %}
+{% if page_obj.paginator.num_pages > 1 %}
+  <nav class="pagination" aria-label="Pages">
+    {% if page_obj.has_previous %}
+      <a href="{% querystring page=1 %}">&laquo; First</a>
+      <a href="{% querystring page=page_obj.previous_page_number %}" rel="prev">&lsaquo; Previous</a>
+    {% endif %}
+    <span class="pagination-current" aria-current="page">
+      Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+      <span class="pagination-count">({{ page_obj.start_index }}&ndash;{{ page_obj.end_index }} of {{ page_obj.paginator.count }})</span>
+    </span>
+    {% if page_obj.has_next %}
+      <a href="{% querystring page=page_obj.next_page_number %}" rel="next">Next &rsaquo;</a>
+      <a href="{% querystring page=page_obj.paginator.num_pages %}">Last &raquo;</a>
+    {% endif %}
+  </nav>
+{% endif %}

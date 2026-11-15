@@ -59,7 +59,7 @@ class AdminComplaintFilterTests(ComplaintFilterTestCase):
     def test_no_filters_lists_everything(self):
         response = self.client.get(self.url)
 
-        self.assertEqual(response.context["complaints"].count(), 3)
+        self.assertEqual(len(response.context["complaints"]), 3)
         self.assertNotContains(response, "No results found")
 
     def test_no_matches_shows_message_not_error(self):

@@ -58,12 +58,15 @@ class Room(models.Model):
         related_name="rooms",
     )
     room_number = models.CharField(max_length=20)
+    # Floor and type are room list filters, so both are indexed (NFR-5).
     floor = models.PositiveIntegerField(
-        validators=[MinValueValidator(1)]
+        validators=[MinValueValidator(1)],
+        db_index=True,
     )
     room_type = models.CharField(
         max_length=20,
         choices=RoomType.choices,
+        db_index=True,
     )
     capacity = models.PositiveIntegerField(
         validators=[MinValueValidator(1)]
@@ -158,10 +161,12 @@ class RoomApplication(models.Model):
         choices=Room.RoomType.choices,
         blank=True,
     )
+    # The pending-applications page and the dashboard filter on status (NFR-5).
     status = models.CharField(
         max_length=20,
         choices=Status.choices,
         default=Status.PENDING,
+        db_index=True,
     )
     applied_at = models.DateTimeField(auto_now_add=True)
 

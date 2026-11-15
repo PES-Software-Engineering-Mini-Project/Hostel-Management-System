@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from accounts.decorators import admin_required, student_required
+from config.pagination import paginate
 
 from .forms import VisitorFilterForm, VisitorForm
 from .models import Visitor
@@ -25,18 +26,21 @@ def register_visitor(request):
 @student_required
 def my_visitors(request):
     # Starting from the student's own visitors keeps other students' visitors private.
-    visitors = request.user.visitors.all()
-    return render(request, "visitors/my_visitors.html", {"visitors": visitors})
+    page_obj = paginate(request, request.user.visitors.all())
+    return render(
+        request, "visitors/my_visitors.html", {"visitors": page_obj, "page_obj": page_obj}
+    )
 
 
 @admin_required
 def visitor_list(request):
     filter_form = VisitorFilterForm(request.GET)
     visitors = filter_form.filter(Visitor.objects.select_related("host"))
+    page_obj = paginate(request, visitors)
     return render(
         request,
         "visitors/visitor_list.html",
-        {"visitors": visitors, "filter_form": filter_form},
+        {"visitors": page_obj, "page_obj": page_obj, "filter_form": filter_form},
     )
 
 

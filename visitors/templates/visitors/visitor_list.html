@@ -48,6 +48,7 @@
         </tbody>
       </table>
     </div>
+    {% include "_pagination.html" %}
   {% else %}
     {% if filter_form.is_filtering %}
       <p class="visitor-empty no-results">No results found. Try a different search or status.</p>
